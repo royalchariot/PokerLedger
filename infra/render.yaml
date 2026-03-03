@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: gilded-poker-api
+    name: royalchariot-poker-api
     env: docker
     dockerfilePath: ./apps/api/Dockerfile
     plan: free
@@ -23,7 +23,7 @@ services:
         value: 15000
 
   - type: web
-    name: gilded-poker-web
+    name: royalchariot-poker-web
     env: static
     rootDir: apps/web
     buildCommand: npm install && npm run build
