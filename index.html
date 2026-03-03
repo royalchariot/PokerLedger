@@ -1,0 +1,2097 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Gilded Poker House</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#070707;
+      --bg2:#0c0c0c;
+      --panel: rgba(255,255,255,.06);
+      --stroke: rgba(255,215,128,.18);
+
+      --gold1:#ffdd8a;
+      --gold2:#d6a84f;
+      --gold3:#8f6a1c;
+
+      --txt:#f7f3e7;
+      --mut: rgba(247,243,231,.72);
+
+      --green:#22c55e;
+      --red:#ef4444;
+      --cyan:#06b6d4;
+      --orange:#f97316;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      color:var(--txt);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 700px at 10% 10%, rgba(255,221,138,.11), transparent 55%),
+        radial-gradient(900px 600px at 90% 20%, rgba(214,168,79,.10), transparent 55%),
+        radial-gradient(900px 600px at 50% 95%, rgba(6,182,212,.06), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    .wrap{ max-width:1150px; margin:0 auto; padding:22px; }
+
+    .top{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      margin-bottom:14px;
+    }
+    .brand{ display:flex; align-items:center; gap:12px; user-select:none; }
+    .logo{
+      width:46px; height:46px; border-radius:16px;
+      background: conic-gradient(from 210deg, var(--gold1), var(--gold2), var(--gold3), var(--gold1));
+      box-shadow: 0 18px 60px rgba(0,0,0,.6);
+      border: 1px solid rgba(255,221,138,.35);
+      position:relative; overflow:hidden;
+    }
+    .logo::after{
+      content:"♠";
+      position:absolute; inset:0;
+      display:grid; place-items:center;
+      font-family: Cinzel, serif;
+      font-weight:900;
+      color: rgba(10,10,10,.85);
+      text-shadow: 0 2px 0 rgba(255,255,255,.12);
+      font-size: 26px;
+      transform: rotate(-10deg);
+    }
+    h1{
+      margin:0;
+      font-family: Cinzel, serif;
+      letter-spacing:.6px;
+      font-size: 18px;
+      font-weight:900;
+    }
+    .sub{ margin:2px 0 0; color:var(--mut); font-size:12px; }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:10px;
+      padding: 9px 12px; border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.28);
+      backdrop-filter: blur(10px);
+      font-size:12px; color:var(--mut);
+    }
+    .dot{
+      width:10px; height:10px; border-radius:99px;
+      background: var(--green);
+      box-shadow: 0 0 0 4px rgba(34,197,94,.12);
+    }
+
+    .grid{ display:grid; gap:14px; grid-template-columns: 1fr; }
+    @media (min-width: 940px){
+      .grid{ grid-template-columns: 1.15fr .85fr; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,221,138,.06), rgba(0,0,0,.18));
+      border:1px solid var(--stroke);
+      border-radius: 20px;
+      padding:14px;
+      box-shadow: 0 20px 80px rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
+    }
+    .cardTitle{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      margin-bottom:10px;
+      flex-wrap: wrap;
+    }
+    .cardTitle strong{
+      font-family: Cinzel, serif;
+      letter-spacing:.5px;
+      font-size: 13px;
+    }
+    .hint{ color:var(--mut); font-size:12px; }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
+    label{ display:block; font-size:12px; color:var(--mut); margin:0 0 6px; }
+
+    input, select, textarea, button{
+      font: inherit;
+      border-radius: 14px;
+      border:1px solid rgba(255,221,138,.18);
+      background: rgba(0,0,0,.35);
+      color: var(--txt);
+      padding: 11px 12px;
+      outline:none;
+      transition: transform .08s ease, border-color .12s ease, filter .12s ease;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(255,221,138,.55);
+      box-shadow: 0 0 0 4px rgba(255,221,138,.12);
+    }
+    button{ cursor:pointer; }
+    button:hover{ filter: brightness(1.07); }
+    button:active{ transform: translateY(1px) scale(.99); }
+    button:disabled{
+      opacity: 0.5;
+      cursor: not-allowed;
+      filter: none;
+    }
+
+    .btnGold{
+      background: linear-gradient(180deg, rgba(255,221,138,.95), rgba(214,168,79,.92));
+      border-color: rgba(255,221,138,.55);
+      color: #121212;
+      font-weight: 900;
+      letter-spacing:.2px;
+    }
+    .btnCyan{ background: linear-gradient(180deg, rgba(6,182,212,.85), rgba(8,145,178,.85)); border-color: rgba(6,182,212,.55); font-weight:800; }
+    .btnGreen{ background: linear-gradient(180deg, rgba(34,197,94,.85), rgba(21,128,61,.85)); border-color: rgba(34,197,94,.55); font-weight:800; }
+    .btnRed{ background: linear-gradient(180deg, rgba(239,68,68,.85), rgba(185,28,28,.85)); border-color: rgba(239,68,68,.55); font-weight:800; }
+    .btnGhost{ background: rgba(0,0,0,.28); }
+
+    .divider{ height:1px; background: rgba(255,221,138,.14); margin:12px 0; border:0; }
+
+    .kpi{ display:grid; gap:10px; grid-template-columns: 1fr 1fr; margin-top:10px; }
+    .box{
+      border:1px solid rgba(255,221,138,.16);
+      background: rgba(0,0,0,.28);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .k{ color:var(--mut); font-size:12px; }
+    .v{ font-weight: 900; font-size: 16px; margin-top:4px; font-family: Cinzel, serif; letter-spacing:.3px; }
+
+    table{ width:100%; border-collapse: separate; border-spacing: 0 8px; margin-top:10px; }
+    th{ text-align:left; font-size:12px; color:var(--mut); font-weight:700; padding: 0 10px; }
+    td{
+      padding: 12px 10px;
+      background: rgba(0,0,0,.28);
+      border-top:1px solid rgba(255,221,138,.14);
+      border-bottom:1px solid rgba(255,221,138,.14);
+    }
+    tr td:first-child{
+      border-left:1px solid rgba(255,221,138,.14);
+      border-top-left-radius: 14px;
+      border-bottom-left-radius: 14px;
+    }
+    tr td:last-child{
+      border-right:1px solid rgba(255,221,138,.14);
+      border-top-right-radius: 14px;
+      border-bottom-right-radius: 14px;
+    }
+    .right{ text-align:right; }
+    .muted{ color:var(--mut); }
+    .ok{ color:#9ae6b4; font-weight:800; }
+    .warn{ color:#fbd38d; font-weight:800; }
+    .bad{ color:#feb2b2; font-weight:800; }
+
+    .hidden{ display:none !important; }
+
+    .hero{
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,221,138,.16);
+      background:
+        radial-gradient(900px 260px at 20% 0%, rgba(255,221,138,.12), transparent 60%),
+        radial-gradient(900px 260px at 95% 0%, rgba(6,182,212,.08), transparent 60%),
+        rgba(0,0,0,.22);
+    }
+    .hero h2{
+      margin:0 0 6px;
+      font-family: Cinzel, serif;
+      font-size: 18px;
+      letter-spacing:.6px;
+    }
+    .hero p{ margin:0; color:var(--mut); font-size:12px; line-height:1.5; }
+
+    .roleGrid{ display:grid; gap:12px; grid-template-columns: 1fr; margin-top: 12px; }
+    @media(min-width:700px){ .roleGrid{ grid-template-columns: 1fr 1fr; } }
+    .roleCard{
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,221,138,.16);
+      background:
+        radial-gradient(800px 260px at 20% 0%, rgba(255,221,138,.10), transparent 60%),
+        radial-gradient(800px 260px at 95% 0%, rgba(214,168,79,.10), transparent 60%),
+        rgba(0,0,0,.22);
+      box-shadow: 0 18px 70px rgba(0,0,0,.55);
+    }
+    .roleCard h3{
+      margin:0 0 6px;
+      font-family: Cinzel, serif;
+      letter-spacing:.5px;
+    }
+    .roleCard p{ margin:0 0 12px; color:var(--mut); font-size:12px; line-height:1.45; }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.62);
+      border: 1px solid rgba(255,221,138,.18);
+      padding: 10px 12px;
+      border-radius: 14px;
+      color: var(--txt);
+      font-size: 12px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 70px rgba(0,0,0,.7);
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .18s ease, transform .18s ease;
+      max-width: 92vw;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      z-index: 40;
+    }
+    .toast.show{ opacity:1; transform: translateX(-50%) translateY(-2px); }
+
+    .shake{ animation: shake .35s ease; }
+    @keyframes shake{
+      0%{ transform: translateX(0); }
+      25%{ transform: translateX(-4px); }
+      50%{ transform: translateX(4px); }
+      75%{ transform: translateX(-3px); }
+      100%{ transform: translateX(0); }
+    }
+
+    .chipBadge{
+      display:inline-flex; align-items:center; gap:10px;
+      padding: 8px 10px; border-radius: 999px;
+      border: 1px solid rgba(255,221,138,.16);
+      background: rgba(0,0,0,.28);
+      color: var(--mut);
+      font-size: 12px;
+    }
+    .chipIcon{
+      width:16px; height:16px; border-radius: 999px;
+      background: conic-gradient(from 90deg, var(--gold1), var(--gold2), var(--gold3), var(--gold1));
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,.45);
+      border: 1px solid rgba(255,221,138,.26);
+    }
+
+    .requestList{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+
+    details.panel{
+      border:1px solid rgba(255,221,138,.14);
+      border-radius: 14px;
+      background: rgba(0,0,0,.22);
+      padding: 8px 10px;
+      margin-top: 10px;
+    }
+    details.panel > summary{
+      cursor: pointer;
+      color: var(--mut);
+      font-size: 12px;
+      font-weight: 700;
+      user-select: none;
+      outline: none;
+    }
+    details.panel > summary::-webkit-details-marker{
+      filter: brightness(1.2);
+    }
+    .panelBody{
+      margin-top: 10px;
+    }
+
+    @media (max-width: 700px){
+      .top{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+      .kpi{
+        grid-template-columns: 1fr;
+      }
+      th, td{ font-size: 12px; }
+      .sub{ line-height: 1.4; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>Gilded Poker House</h1>
+          <div class="sub">Banker creates a House • Players join via code/link • Requests update balances live</div>
+        </div>
+      </div>
+      <div class="pill"><span class="dot"></span><span id="statusText">Ready</span></div>
+    </div>
+
+    <div class="card" id="screenHome">
+      <div class="hero">
+        <h2>Welcome to the House</h2>
+        <p>Host a poker night with a clean ledger: buy-ins, chip returns, approvals, balances, totals, and settlement view.</p>
+      </div>
+
+      <div class="roleGrid">
+        <div class="roleCard">
+          <h3>🎩 Banker (Host)</h3>
+          <p>Create a house, generate a join code, approve buy-ins/returns, start/end the game, and export records.</p>
+          <button class="btnGold" id="goHost" style="width:100%; padding:14px;">Host a House</button>
+        </div>
+        <div class="roleCard">
+          <h3>🃏 Player</h3>
+          <p>Join with code/link, request buy-ins, return chips, and track your status in real time.</p>
+          <button class="btnCyan" id="goJoin" style="width:100%; padding:14px;">Join a House</button>
+        </div>
+      </div>
+
+      <hr class="divider">
+      <div class="row">
+        <button class="btnGhost" id="clearAll">Clear All Local Data</button>
+        <span class="hint">Use if you want a fresh start.</span>
+      </div>
+    </div>
+
+    <div class="grid hidden" id="screenApp">
+      <div class="card">
+        <div id="hostSetup" class="hidden">
+          <div class="cardTitle">
+            <strong>🎩 Host Setup</strong>
+            <span class="hint">Create a House and share the join link</span>
+          </div>
+
+          <div class="row">
+            <div style="min-width:220px; flex:1;">
+              <label>Banker name</label>
+              <input id="bankerName" placeholder="Ex: Rakesh" maxlength="40" />
+            </div>
+            <div style="min-width:220px; flex:1;">
+              <label>Chip value per 1 buy-in</label>
+              <input id="chipValue" type="number" min="1" step="1" value="500"/>
+            </div>
+            <div style="min-width:180px;">
+              <label># of seats (players)</label>
+              <input id="seatCount" type="number" min="2" max="12" step="1" value="6"/>
+            </div>
+            <button class="btnGold" id="createHouse">Create House</button>
+          </div>
+
+          <div id="hostSetupResult" class="hidden" style="margin-top:12px;">
+            <div class="chipBadge"><span class="chipIcon"></span>
+              <span>Join Code: <b id="joinCodeText" style="color:var(--gold1)"></b></span>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button class="btnGreen" id="copyLink">Copy Join Link</button>
+              <button class="btnGhost" id="copyCode">Copy Code</button>
+              <button class="btnRed" id="resetHouse">Reset House</button>
+            </div>
+            <div class="hint" style="margin-top:10px;" id="joinLinkHint"></div>
+          </div>
+        </div>
+
+        <div id="playerJoin" class="hidden">
+          <div class="cardTitle">
+            <strong>🃏 Join a House</strong>
+            <span class="hint">Enter code or open join link</span>
+          </div>
+
+          <div class="row">
+            <div style="min-width:240px; flex:1;">
+              <label>Join code</label>
+              <input id="joinCodeInput" placeholder="Ex: A1B2C3" maxlength="6" />
+            </div>
+            <button class="btnCyan" id="joinWithCode">Join</button>
+          </div>
+
+          <hr class="divider">
+
+          <div class="row">
+            <div style="min-width:240px; flex:1;">
+              <label>Your name</label>
+              <input id="playerName" placeholder="Ex: Sai" maxlength="40" />
+            </div>
+            <div style="min-width:240px; flex:1;">
+              <label>Select seat</label>
+              <select id="seatSelect"></select>
+            </div>
+            <button class="btnGold" id="confirmSeat">Enter House</button>
+          </div>
+
+          <div class="hint" style="margin-top:10px;" id="joinStatus"></div>
+        </div>
+
+        <div id="bankerLive" class="hidden">
+          <div class="cardTitle">
+            <strong>🎩 Banker Console</strong>
+            <span class="chipBadge"><span class="chipIcon"></span><span id="chipBadgeBanker">—</span></span>
+          </div>
+
+          <div class="row">
+            <button class="btnGreen" id="startGame">Start Game</button>
+            <button class="btnRed" id="endGame">End Game</button>
+            <button class="btnGhost" id="backHome1">Back Home</button>
+          </div>
+
+          <div class="kpi">
+            <div class="box"><div class="k">Status</div><div class="v" id="gameStatus">Lobby</div></div>
+            <div class="box"><div class="k">Chips In Play</div><div class="v" id="chipsInPlay">0</div></div>
+          </div>
+
+          <hr class="divider">
+          <div class="cardTitle">
+            <strong>Players</strong>
+            <span class="hint">Edit names anytime</span>
+          </div>
+          <div style="overflow:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Seat</th>
+                  <th>Player</th>
+                  <th class="right">Buy-ins</th>
+                  <th class="right">Chips Given</th>
+                  <th class="right">Chips Returned</th>
+                  <th class="right">Net Out</th>
+                </tr>
+              </thead>
+              <tbody id="bankerPlayers"></tbody>
+            </table>
+          </div>
+
+          <hr class="divider">
+          <div class="cardTitle">
+            <strong>Requests</strong>
+            <span class="hint" id="pendingHint">No pending</span>
+          </div>
+          <div id="bankerRequests" class="requestList"></div>
+        </div>
+
+        <div id="playerLive" class="hidden">
+          <div class="cardTitle">
+            <strong>🃏 Player Console</strong>
+            <span class="chipBadge"><span class="chipIcon"></span><span id="chipBadgePlayer">—</span></span>
+          </div>
+
+          <div class="kpi">
+            <div class="box"><div class="k">Your Buy-ins Approved</div><div class="v" id="myBuyins">0</div></div>
+            <div class="box"><div class="k">Your Net Chips</div><div class="v" id="myNet">0</div></div>
+          </div>
+
+          <hr class="divider">
+          <div class="cardTitle">
+            <strong>Request Actions</strong>
+            <span class="hint">Banker must approve</span>
+          </div>
+
+          <div class="row">
+            <div style="min-width:220px; flex:1;">
+              <label>Request buy-ins</label>
+              <input id="reqBuyins" type="number" min="1" step="1" value="1"/>
+            </div>
+            <button class="btnGold" id="sendBuyinReq">Request Buy-in</button>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div style="min-width:220px; flex:1;">
+              <label>Return chips</label>
+              <input id="reqReturn" type="number" min="1" step="1" placeholder="Ex: 500"/>
+            </div>
+            <button class="btnCyan" id="sendReturnReq">Request Return</button>
+          </div>
+
+          <hr class="divider">
+          <div class="cardTitle">
+            <strong>Your Requests</strong>
+            <span class="hint">Pending / Approved / Rejected</span>
+          </div>
+          <div id="playerRequests" class="requestList"></div>
+
+          <hr class="divider">
+          <div class="row">
+            <button class="btnGhost" id="backHome2">Back Home</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">
+          <strong>House Summary</strong>
+          <span class="hint">Save / Export / Import</span>
+        </div>
+
+        <div id="summary" class="muted">No house yet.</div>
+
+        <hr class="divider">
+
+        <div class="row" style="align-items:center;">
+          <span class="chipBadge">Mode: <b id="cloudStatusText" style="margin-left:6px;">Local mode</b></span>
+        </div>
+
+        <details class="panel">
+          <summary>Cloud Connect (Firebase)</summary>
+          <div class="panelBody">
+            <label>Firebase Config JSON</label>
+            <textarea id="firebaseConfig" rows="6" style="width:100%;" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}'></textarea>
+            <div class="row" style="margin-top:8px;">
+              <button class="btnGreen" id="connectCloud">Connect Cloud</button>
+              <button class="btnGhost" id="saveCloudConfig">Save Config</button>
+              <button class="btnRed" id="disconnectCloud">Use Local Only</button>
+            </div>
+            <div class="hint" id="cloudHint" style="margin-top:8px;">
+              Paste Firebase web config and click Connect for phone-to-phone sync.
+            </div>
+          </div>
+        </details>
+
+        <details class="panel">
+          <summary>Advanced Data Tools</summary>
+          <div class="panelBody">
+            <div class="row">
+              <button class="btnGhost" id="exportJson">Export JSON</button>
+              <button class="btnGhost" id="exportCsv">Export CSV</button>
+              <button class="btnGhost" id="showImport">Import JSON</button>
+              <button class="btnRed" id="wipeHouse">Wipe House</button>
+            </div>
+
+            <div id="importBox" class="hidden" style="margin-top:10px;">
+              <label>Paste JSON</label>
+              <textarea id="importText" rows="7" style="width:100%;"></textarea>
+              <div class="row" style="margin-top:8px;">
+                <button class="btnGreen" id="doImport">Import</button>
+                <button class="btnGhost" id="cancelImport">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <hr class="divider">
+        <div class="hint">
+          Quick flow: Banker creates house → Players join → Banker starts game.
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* -------------------------
+   Storage + Session + Sync
+-------------------------- */
+const STORAGE_KEY = "gilded_poker_house_v2";
+const SESSION_KEY = "gilded_poker_house_session_v1";
+const CHANNEL = "gilded_poker_house_channel_v2";
+const CLOUD_CFG_KEY = "gilded_poker_house_firebase_cfg_v1";
+const CLOUD_MODE_KEY = "gilded_poker_house_cloud_mode_v1";
+const CLOUD_APP_NAME = "gildedPokerHouseApp";
+const APP_VERSION = 2;
+const MAX_SEATS = 12;
+
+const bc = ("BroadcastChannel" in window) ? new BroadcastChannel(CHANNEL) : null;
+
+const $ = (id)=>document.getElementById(id);
+const uid = ()=>Math.random().toString(16).slice(2)+Date.now().toString(16);
+const now = ()=>new Date().toISOString();
+
+const cloud = {
+  enabled: false,
+  app: null,
+  db: null,
+  unsubscribeHouse: null
+};
+
+function toNum(v){
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function toast(msg){
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 1800);
+}
+
+function shake(el){
+  if(!el) return;
+  el.classList.add("shake");
+  setTimeout(()=>el.classList.remove("shake"), 360);
+}
+
+function setStatus(text){ $("statusText").textContent = text; }
+function setCloudStatus(text){ $("cloudStatusText").textContent = text; }
+
+function escapeHtml(s){
+  return String(s ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+}
+
+function pretty(ts){
+  try{ return new Date(ts).toLocaleString(); }
+  catch{ return String(ts); }
+}
+
+function defaultState(){
+  return {
+    version: APP_VERSION,
+    houses: {},
+    activeHouseId: null
+  };
+}
+
+function defaultSession(){
+  return {
+    role: null,
+    currentHouseId: null,
+    myPlayerId: null
+  };
+}
+
+function normalizePlayer(p, i){
+  return {
+    id: String(p?.id || uid()),
+    seat: Number.isInteger(p?.seat) ? p.seat : i + 1,
+    name: String(p?.name || `Seat ${i + 1}`).slice(0, 40),
+    joined: !!p?.joined,
+    buyinsApproved: Math.max(0, Math.floor(toNum(p?.buyinsApproved))),
+    chipsGiven: Math.max(0, Math.floor(toNum(p?.chipsGiven))),
+    chipsReturned: Math.max(0, Math.floor(toNum(p?.chipsReturned)))
+  };
+}
+
+function normalizeRequest(r){
+  const type = r?.type === "RETURN" ? "RETURN" : "BUYIN";
+  const status = ["PENDING", "APPROVED", "REJECTED", "CANCELLED"].includes(r?.status) ? r.status : "PENDING";
+  return {
+    id: String(r?.id || uid()),
+    ts: String(r?.ts || now()),
+    playerId: String(r?.playerId || ""),
+    type,
+    buyinsCount: type === "BUYIN" ? Math.max(1, Math.floor(toNum(r?.buyinsCount || 1))) : null,
+    chips: type === "RETURN" ? Math.max(1, Math.floor(toNum(r?.chips || 1))) : null,
+    status,
+    reason: r?.reason ? String(r.reason).slice(0, 140) : ""
+  };
+}
+
+function normalizeHouse(h){
+  const seatCount = Math.min(MAX_SEATS, Math.max(2, Math.floor(toNum(h?.players?.length || h?.seatCount || 6))));
+  const playersSource = Array.isArray(h?.players) ? h.players : Array.from({length: seatCount}).map((_,i)=>({ seat:i+1 }));
+  const players = playersSource.slice(0, MAX_SEATS).map((p, i)=>normalizePlayer(p, i));
+
+  // Ensure unique seat numbers and ordering by seat
+  players.sort((a,b)=>a.seat-b.seat);
+  for(let i=0;i<players.length;i++) players[i].seat = i + 1;
+
+  return {
+    id: String(h?.id || ""),
+    createdAt: String(h?.createdAt || now()),
+    status: ["lobby", "live", "ended"].includes(h?.status) ? h.status : "lobby",
+    bankerName: String(h?.bankerName || "Banker").slice(0, 40),
+    chipValuePerBuyin: Math.max(1, Math.floor(toNum(h?.chipValuePerBuyin || 500))),
+    players,
+    requests: Array.isArray(h?.requests) ? h.requests.map(normalizeRequest) : [],
+    audit: Array.isArray(h?.audit) ? h.audit : []
+  };
+}
+
+function normalizeState(obj){
+  if(!obj || typeof obj !== "object") return defaultState();
+
+  const base = {
+    version: APP_VERSION,
+    houses: {},
+    activeHouseId: null
+  };
+
+  const houses = obj.houses && typeof obj.houses === "object" ? obj.houses : {};
+  for(const [hid, raw] of Object.entries(houses)){
+    const nh = normalizeHouse(raw);
+    const id = String(hid || nh.id || "").toUpperCase();
+    if(!/^[A-Z0-9]{6}$/.test(id)) continue;
+    nh.id = id;
+    base.houses[id] = nh;
+  }
+
+  const active = String(obj.activeHouseId || "").toUpperCase();
+  base.activeHouseId = base.houses[active] ? active : null;
+  return base;
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    return normalizeState(JSON.parse(raw));
+  }catch{
+    return defaultState();
+  }
+}
+
+function loadSession(){
+  try{
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if(!raw) return defaultSession();
+    const obj = JSON.parse(raw);
+    return {
+      role: obj?.role === "BANKER" || obj?.role === "PLAYER" ? obj.role : null,
+      currentHouseId: typeof obj?.currentHouseId === "string" ? obj.currentHouseId.toUpperCase() : null,
+      myPlayerId: typeof obj?.myPlayerId === "string" ? obj.myPlayerId : null
+    };
+  }catch{
+    return defaultSession();
+  }
+}
+
+function saveSession(){
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({ role, currentHouseId, myPlayerId }));
+}
+
+let state = loadState();
+let session = loadSession();
+let role = session.role;
+let currentHouseId = session.currentHouseId || state.activeHouseId || null;
+let myPlayerId = session.myPlayerId;
+
+function saveState(opts = {}){
+  const broadcast = opts.broadcast !== false;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  saveSession();
+  if (broadcast && bc) bc.postMessage({type:"STATE_UPDATED"});
+}
+
+function isCloudReady(){
+  return cloud.enabled && !!cloud.db;
+}
+
+function getHouseRef(houseId){
+  return cloud.db.collection("houses").doc(houseId);
+}
+
+function serializeHouseForCloud(h){
+  const normalized = normalizeHouse(h);
+  normalized.id = h.id;
+  const payload = JSON.parse(JSON.stringify(normalized));
+  delete payload.id;
+  payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+  return payload;
+}
+
+function teardownHouseSubscription(){
+  if(cloud.unsubscribeHouse){
+    cloud.unsubscribeHouse();
+    cloud.unsubscribeHouse = null;
+  }
+}
+
+function subscribeToHouseCloud(houseId){
+  if(!isCloudReady() || !houseId) return;
+
+  teardownHouseSubscription();
+  const ref = getHouseRef(houseId);
+  cloud.unsubscribeHouse = ref.onSnapshot(
+    (snap)=>{
+      if(!snap.exists){
+        if(currentHouseId === houseId){
+          delete state.houses[houseId];
+          state.activeHouseId = null;
+          currentHouseId = null;
+          myPlayerId = null;
+          saveState({broadcast:false});
+          renderAll();
+        }
+        return;
+      }
+
+      const remote = normalizeHouse({ id: houseId, ...snap.data() });
+      remote.id = houseId;
+      state.houses[houseId] = remote;
+      state.activeHouseId = houseId;
+      if(!currentHouseId) currentHouseId = houseId;
+
+      if(myPlayerId && !remote.players.some(p=>p.id === myPlayerId)){
+        myPlayerId = null;
+      }
+
+      saveState({broadcast:false});
+      renderAll();
+    },
+    (err)=>{
+      console.error(err);
+      setCloudStatus("Cloud listener error");
+      toast("Cloud listener error");
+    }
+  );
+}
+
+async function fetchHouseFromCloud(code){
+  if(!isCloudReady()) return null;
+  const snap = await getHouseRef(code).get();
+  if(!snap.exists) return null;
+  const loaded = normalizeHouse({ id: code, ...snap.data() });
+  loaded.id = code;
+  state.houses[code] = loaded;
+  state.activeHouseId = code;
+  currentHouseId = code;
+  saveState({broadcast:false});
+  subscribeToHouseCloud(code);
+  return loaded;
+}
+
+async function upsertHouseToCloud(h){
+  if(!isCloudReady()) return;
+  await getHouseRef(h.id).set(serializeHouseForCloud(h), { merge: true });
+}
+
+async function mutateActiveHouse(mutator){
+  const active = house();
+  if(!active) return { ok:false, code:"NO_HOUSE" };
+
+  if(!isCloudReady()){
+    const local = normalizeHouse(active);
+    local.id = active.id;
+    const decision = mutator(local);
+    if(decision && decision.ok === false) return decision;
+    saveHouse(local);
+    return { ok:true };
+  }
+
+  const ref = getHouseRef(active.id);
+  try{
+    await cloud.db.runTransaction(async (tx)=>{
+      const snap = await tx.get(ref);
+      if(!snap.exists){
+        const err = new Error("HOUSE_NOT_FOUND");
+        err.code = "HOUSE_NOT_FOUND";
+        throw err;
+      }
+
+      const remote = normalizeHouse({ id: active.id, ...snap.data() });
+      remote.id = active.id;
+      const decision = mutator(remote);
+      if(decision && decision.ok === false){
+        const err = new Error(decision.code || "MUTATION_BLOCKED");
+        err.code = decision.code || "MUTATION_BLOCKED";
+        throw err;
+      }
+
+      tx.set(ref, serializeHouseForCloud(remote));
+    });
+    return { ok:true };
+  }catch(err){
+    if(err?.code === "MUTATION_BLOCKED") return { ok:false, code:"MUTATION_BLOCKED" };
+    if(err?.code === "HOUSE_NOT_FOUND") return { ok:false, code:"HOUSE_NOT_FOUND" };
+    if(err?.code && typeof err.code === "string" && err.code !== "unknown"){
+      return { ok:false, code:err.code };
+    }
+    console.error(err);
+    return { ok:false, code:"CLOUD_WRITE_FAILED" };
+  }
+}
+
+function loadSavedFirebaseConfigText(){
+  return localStorage.getItem(CLOUD_CFG_KEY) || "";
+}
+
+function saveFirebaseConfigText(text){
+  localStorage.setItem(CLOUD_CFG_KEY, text);
+}
+
+function loadCloudModePref(){
+  return localStorage.getItem(CLOUD_MODE_KEY) === "cloud";
+}
+
+function saveCloudConfigAction(){
+  const cfgText = ($("firebaseConfig").value || "").trim();
+  if(!cfgText){
+    toast("Nothing to save");
+    return;
+  }
+  try{
+    JSON.parse(cfgText);
+    saveFirebaseConfigText(cfgText);
+    toast("Config saved");
+  }catch{
+    shake($("firebaseConfig"));
+    toast("Invalid Firebase JSON");
+  }
+}
+
+async function connectCloudAction(){
+  const cfgText = ($("firebaseConfig").value || "").trim();
+  if(!cfgText){
+    shake($("firebaseConfig"));
+    toast("Paste Firebase config JSON");
+    return;
+  }
+
+  let config;
+  try{
+    config = JSON.parse(cfgText);
+  }catch{
+    shake($("firebaseConfig"));
+    toast("Invalid Firebase JSON");
+    return;
+  }
+
+  if(!window.firebase?.initializeApp || !window.firebase?.firestore){
+    toast("Firebase SDK not loaded");
+    return;
+  }
+
+  try{
+    let app = firebase.apps.find(a => a.name === CLOUD_APP_NAME) || null;
+    if(!app){
+      app = firebase.initializeApp(config, CLOUD_APP_NAME);
+    }
+
+    cloud.app = app;
+    cloud.db = firebase.firestore(app);
+    cloud.enabled = true;
+
+    saveFirebaseConfigText(cfgText);
+    localStorage.setItem(CLOUD_MODE_KEY, "cloud");
+    setCloudStatus("Cloud connected");
+    $("cloudHint").textContent = `Connected to Firestore project: ${config.projectId || "unknown"}`;
+    toast("Cloud connected");
+
+    if(currentHouseId){
+      await fetchHouseFromCloud(currentHouseId).catch(()=>null);
+      subscribeToHouseCloud(currentHouseId);
+    }
+  }catch(err){
+    console.error(err);
+    cloud.enabled = false;
+    cloud.db = null;
+    setCloudStatus("Cloud connect failed");
+    toast("Cloud connect failed");
+  }
+}
+
+function disconnectCloudAction(notify = true){
+  teardownHouseSubscription();
+  cloud.enabled = false;
+  cloud.db = null;
+  localStorage.setItem(CLOUD_MODE_KEY, "local");
+  setCloudStatus("Local mode");
+  $("cloudHint").textContent = "Using local browser storage only.";
+  if(notify) toast("Switched to local mode");
+}
+
+function onExternalUpdate(){
+  state = loadState();
+
+  if (currentHouseId && !state.houses[currentHouseId]){
+    currentHouseId = null;
+    myPlayerId = null;
+    role = null;
+    saveSession();
+    gotoHome();
+    toast("House removed");
+  }
+
+  renderAll();
+}
+
+/* -------------------------
+   House model helpers
+-------------------------- */
+function makeHouseId(){
+  return Math.random().toString(36).slice(2,8).toUpperCase();
+}
+
+function house(){
+  return currentHouseId ? state.houses[currentHouseId] : null;
+}
+
+function ensureHouseLoaded(houseId){
+  if(!state.houses[houseId]) return false;
+  currentHouseId = houseId;
+  state.activeHouseId = houseId;
+  saveState();
+  if(isCloudReady()) subscribeToHouseCloud(houseId);
+  return true;
+}
+
+function pendingReturnsForPlayer(h, pid){
+  return (h.requests || []).reduce((sum, r)=>{
+    if(r.playerId !== pid || r.type !== "RETURN" || r.status !== "PENDING") return sum;
+    return sum + Math.max(0, toNum(r.chips));
+  }, 0);
+}
+
+function computeTotals(h){
+  const players = h.players || [];
+  const totalBuyins = players.reduce((s,p)=>s+Math.max(0, toNum(p.buyinsApproved)),0);
+  const totalGiven = players.reduce((s,p)=>s+Math.max(0, toNum(p.chipsGiven)),0);
+  const totalReturned = players.reduce((s,p)=>s+Math.max(0, toNum(p.chipsReturned)),0);
+  const inPlay = totalGiven - totalReturned;
+  const pending = (h.requests||[]).filter(r=>r.status==="PENDING").length;
+  return { totalBuyins, totalGiven, totalReturned, inPlay, pending };
+}
+
+/* -------------------------
+   Router
+-------------------------- */
+function show(elId){
+  const screens = ["screenHome","screenApp"];
+  screens.forEach(id => $(id).classList.add("hidden"));
+  $(elId).classList.remove("hidden");
+}
+
+function showLeftSection(sectionId){
+  const sections = ["hostSetup","playerJoin","bankerLive","playerLive"];
+  sections.forEach(id => $(id).classList.add("hidden"));
+  $(sectionId).classList.remove("hidden");
+}
+
+function gotoHome(){
+  show("screenHome");
+  setStatus("Ready");
+}
+
+function gotoApp(){
+  show("screenApp");
+}
+
+/* -------------------------
+   Render
+-------------------------- */
+function renderAll(){
+  renderSummary();
+  renderHostSetup();
+  renderJoin();
+  renderBanker();
+  renderPlayer();
+}
+
+function renderSummary(){
+  const h = house();
+  if(!h){
+    $("summary").innerHTML = `<div class="muted">No house yet.</div>`;
+    return;
+  }
+
+  const t = computeTotals(h);
+  const statusBadge = h.status === "lobby"
+    ? `<span class="warn">Lobby</span>`
+    : (h.status === "live" ? `<span class="ok">Live</span>` : `<span class="bad">Ended</span>`);
+
+  const settledRows = h.players
+    .filter(p=>p.joined || p.buyinsApproved > 0 || p.chipsReturned > 0)
+    .map(p=>{
+      const cashIn = p.chipsGiven;
+      const cashOut = p.chipsReturned;
+      const pnl = cashOut - cashIn;
+      const cls = pnl > 0 ? "ok" : pnl < 0 ? "bad" : "muted";
+      const sign = pnl > 0 ? "+" : "";
+      return `
+        <tr>
+          <td>${p.seat}</td>
+          <td>${escapeHtml(p.name)}</td>
+          <td class="right">${cashIn}</td>
+          <td class="right">${cashOut}</td>
+          <td class="right ${cls}" style="font-weight:900;">${sign}${pnl}</td>
+        </tr>
+      `;
+    }).join("");
+
+  const settlementTable = settledRows
+    ? `
+      <div class="divider"></div>
+      <div class="muted" style="margin-bottom:6px; font-size:12px;">Settlement Snapshot (chips)</div>
+      <div style="overflow:auto;">
+        <table style="margin-top:0;">
+          <thead>
+            <tr>
+              <th>Seat</th>
+              <th>Player</th>
+              <th class="right">In</th>
+              <th class="right">Out</th>
+              <th class="right">P/L</th>
+            </tr>
+          </thead>
+          <tbody>${settledRows}</tbody>
+        </table>
+      </div>
+    `
+    : "";
+
+  $("summary").innerHTML = `
+    <div class="row" style="justify-content:space-between; align-items:center;">
+      <div class="chipBadge"><span class="chipIcon"></span><span>House: <b class="mono" style="color:var(--gold1)">${escapeHtml(h.id)}</b></span></div>
+      <div class="chipBadge">${statusBadge}</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="row">
+      <div class="chipBadge">Banker: <b style="margin-left:6px;">${escapeHtml(h.bankerName)}</b></div>
+      <div class="chipBadge">1 buy-in = <b style="margin-left:6px;">${h.chipValuePerBuyin}</b> chips</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="kpi">
+      <div class="box"><div class="k">Buy-ins Approved</div><div class="v">${t.totalBuyins}</div></div>
+      <div class="box"><div class="k">Chips Given</div><div class="v">${t.totalGiven}</div></div>
+      <div class="box"><div class="k">Chips Returned</div><div class="v">${t.totalReturned}</div></div>
+      <div class="box"><div class="k">Chips In Play</div><div class="v">${t.inPlay}</div></div>
+    </div>
+
+    ${settlementTable}
+
+    <div class="divider"></div>
+
+    <div class="muted" style="font-size:12px;">
+      Created: ${pretty(h.createdAt)}<br>
+      Pending requests: <b>${t.pending}</b>
+    </div>
+  `;
+}
+
+function renderHostSetup(){
+  if(role !== "BANKER") return;
+
+  const h = house();
+  $("hostSetupResult").classList.toggle("hidden", !h);
+
+  if(h){
+    $("joinCodeText").textContent = h.id;
+    const link = makeJoinLink(h.id);
+    $("joinLinkHint").textContent = `Join link: ${link}`;
+  }
+}
+
+function renderJoin(){
+  if(role !== "PLAYER") return;
+
+  const h = house();
+  const seatSelect = $("seatSelect");
+  seatSelect.innerHTML = "";
+
+  if(!h){
+    $("joinStatus").textContent = "No house loaded. Enter a join code.";
+    return;
+  }
+
+  $("joinStatus").textContent = `Loaded house ${h.id}. Choose a seat and enter your name.`;
+
+  for(const p of h.players){
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    const taken = p.joined ? " (taken)" : "";
+    opt.textContent = `Seat ${p.seat}: ${p.name}${taken}`;
+    opt.disabled = !!p.joined && p.id !== myPlayerId;
+    seatSelect.appendChild(opt);
+  }
+
+  if(myPlayerId){
+    const exists = h.players.some(p=>p.id === myPlayerId);
+    if(exists) seatSelect.value = myPlayerId;
+  }
+}
+
+function renderBanker(){
+  if(role !== "BANKER") return;
+  const h = house();
+  if(!h) return;
+
+  $("chipBadgeBanker").textContent = `1 buy-in = ${h.chipValuePerBuyin} chips`;
+  $("gameStatus").textContent = h.status.toUpperCase();
+  $("chipsInPlay").textContent = computeTotals(h).inPlay;
+
+  $("startGame").disabled = h.status !== "lobby";
+  $("endGame").disabled = h.status !== "live";
+
+  const body = $("bankerPlayers");
+  body.innerHTML = "";
+  for(const p of h.players){
+    const net = (p.chipsGiven||0) - (p.chipsReturned||0);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.seat}</td>
+      <td><input data-pid="${p.id}" value="${escapeHtml(p.name)}" style="width:100%"></td>
+      <td class="right"><span class="warn">${p.buyinsApproved||0}</span></td>
+      <td class="right">${p.chipsGiven||0}</td>
+      <td class="right">${p.chipsReturned||0}</td>
+      <td class="right ${net>0?'warn':(net<0?'ok':'muted')}" style="font-weight:900;">${net}</td>
+    `;
+    body.appendChild(tr);
+  }
+
+  body.querySelectorAll("input[data-pid]").forEach(inp=>{
+    inp.addEventListener("change", ()=>{
+      const pid = inp.getAttribute("data-pid");
+      updatePlayerNameAction(pid, inp.value);
+    });
+  });
+
+  const pending = h.requests.filter(r=>r.status==="PENDING");
+  $("pendingHint").textContent = pending.length ? `${pending.length} pending` : "No pending";
+
+  const wrap = $("bankerRequests");
+  wrap.innerHTML = "";
+
+  if(!pending.length){
+    wrap.innerHTML = `<div class="muted">No pending requests.</div>`;
+    return;
+  }
+
+  for(const r of pending){
+    const p = h.players.find(x=>x.id===r.playerId);
+    const who = p ? p.name : "Unknown";
+    const detail = r.type==="BUYIN"
+      ? `Buy-in x ${r.buyinsCount} → ${r.buyinsCount * h.chipValuePerBuyin} chips`
+      : `Return ${r.chips} chips`;
+
+    const box = document.createElement("div");
+    box.className = "roleCard";
+    box.innerHTML = `
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-family:Cinzel,serif;font-weight:900; letter-spacing:.4px;">${escapeHtml(who)}</div>
+          <div class="muted" style="font-size:12px;">${pretty(r.ts)}</div>
+        </div>
+        <div class="chipBadge"><span class="chipIcon"></span><span>${escapeHtml(detail)}</span></div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button class="btnGreen" data-ap="${r.id}">Approve</button>
+        <button class="btnRed" data-rj="${r.id}">Reject</button>
+      </div>
+    `;
+    wrap.appendChild(box);
+  }
+
+  wrap.querySelectorAll("button[data-ap]").forEach(btn=>{
+    btn.addEventListener("click", ()=>approveRequest(btn.getAttribute("data-ap")));
+  });
+  wrap.querySelectorAll("button[data-rj]").forEach(btn=>{
+    btn.addEventListener("click", ()=>rejectRequest(btn.getAttribute("data-rj"), "Rejected by banker"));
+  });
+}
+
+function renderPlayer(){
+  if(role !== "PLAYER") return;
+  const h = house();
+  if(!h) return;
+
+  $("chipBadgePlayer").textContent = `1 buy-in = ${h.chipValuePerBuyin} chips`;
+
+  const me = h.players.find(p=>p.id===myPlayerId);
+  const buyins = me ? (me.buyinsApproved||0) : 0;
+  const net = me ? ((me.chipsGiven||0)-(me.chipsReturned||0)) : 0;
+
+  $("myBuyins").textContent = buyins;
+  $("myNet").textContent = net;
+
+  const wrap = $("playerRequests");
+  wrap.innerHTML = "";
+
+  if(!myPlayerId){
+    wrap.innerHTML = `<div class="muted">Join a seat first.</div>`;
+    return;
+  }
+
+  const mine = h.requests
+    .filter(r=>r.playerId===myPlayerId)
+    .sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+
+  if(!mine.length){
+    wrap.innerHTML = `<div class="muted">No requests yet.</div>`;
+    return;
+  }
+
+  for(const r of mine){
+    const badge = r.status==="PENDING" ? `<span class="warn">Pending</span>` :
+                  r.status==="APPROVED" ? `<span class="ok">Approved</span>` :
+                  r.status==="CANCELLED" ? `<span class="muted">Cancelled</span>` :
+                  `<span class="bad">Rejected</span>`;
+    const detail = r.type==="BUYIN"
+      ? `Buy-in x ${r.buyinsCount} → ${r.buyinsCount * h.chipValuePerBuyin} chips`
+      : `Return ${r.chips} chips`;
+
+    const reason = r.reason ? `<div class="muted" style="font-size:12px; margin-top:4px;">${escapeHtml(r.reason)}</div>` : "";
+
+    const div = document.createElement("div");
+    div.className = "box";
+    div.innerHTML = `
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-weight:900;">${escapeHtml(detail)}</div>
+          <div class="muted" style="font-size:12px;">${pretty(r.ts)}</div>
+          ${reason}
+        </div>
+        <div style="font-weight:900;">${badge}</div>
+      </div>
+      ${r.status === "PENDING" ? `<div class="row" style="margin-top:8px;"><button class="btnGhost" data-cancel="${r.id}">Cancel Request</button></div>` : ""}
+    `;
+    wrap.appendChild(div);
+  }
+
+  wrap.querySelectorAll("button[data-cancel]").forEach(btn=>{
+    btn.addEventListener("click", ()=>cancelOwnRequest(btn.getAttribute("data-cancel")));
+  });
+}
+
+/* -------------------------
+   House save/load
+-------------------------- */
+function saveHouse(h){
+  state.houses[h.id] = normalizeHouse(h);
+  state.activeHouseId = h.id;
+  currentHouseId = h.id;
+  saveState();
+}
+
+function makeJoinLink(code){
+  return `${location.origin}${location.pathname}#join=${encodeURIComponent(code)}`;
+}
+
+async function updatePlayerNameAction(pid, rawName){
+  const next = (rawName || "").trim().slice(0, 40);
+  const result = await mutateActiveHouse((h)=>{
+    const p = h.players.find(x=>x.id === pid);
+    if(!p) return { ok:false, code:"PLAYER_NOT_FOUND" };
+    p.name = next || `Seat ${p.seat}`;
+    return { ok:true };
+  });
+  if(!result.ok){
+    toast("Could not update name");
+  }
+}
+
+async function createHouseInCloud(h){
+  const ref = getHouseRef(h.id);
+  await cloud.db.runTransaction(async (tx)=>{
+    const snap = await tx.get(ref);
+    if(snap.exists){
+      const err = new Error("HOUSE_EXISTS");
+      err.code = "HOUSE_EXISTS";
+      throw err;
+    }
+    tx.set(ref, serializeHouseForCloud(h));
+  });
+}
+
+/* -------------------------
+   Actions: Host
+-------------------------- */
+async function createHouseAction(){
+  const bankerName = ($("bankerName").value||"").trim() || "Banker";
+  const chipValue = parseInt($("chipValue").value||"0",10);
+  const seatCount = parseInt($("seatCount").value||"0",10);
+
+  if(!(chipValue > 0)){
+    shake($("chipValue"));
+    toast("Enter chip value (e.g., 500)");
+    return;
+  }
+
+  if(!(seatCount >= 2 && seatCount <= MAX_SEATS)){
+    shake($("seatCount"));
+    toast(`Seats must be 2 to ${MAX_SEATS}`);
+    return;
+  }
+
+  let h = null;
+  let created = false;
+  for(let i=0; i<20; i++){
+    let id = makeHouseId();
+    while(state.houses[id]) id = makeHouseId();
+    const candidate = {
+      id,
+      createdAt: now(),
+      status: "lobby",
+      bankerName: bankerName.slice(0, 40),
+      chipValuePerBuyin: chipValue,
+      players: Array.from({length: seatCount}).map((_,idx)=>({
+        id: uid(),
+        seat: idx + 1,
+        name: `Seat ${idx + 1}`,
+        joined: false,
+        buyinsApproved: 0,
+        chipsGiven: 0,
+        chipsReturned: 0
+      })),
+      requests: [],
+      audit: [{ts: now(), type:"HOUSE_CREATED", by:"BANKER"}]
+    };
+
+    if(isCloudReady()){
+      try{
+        await createHouseInCloud(candidate);
+        h = candidate;
+        created = true;
+        break;
+      }catch(err){
+        if(err?.code === "HOUSE_EXISTS") continue;
+        console.error(err);
+        toast("Failed to create cloud house");
+        return;
+      }
+    }else{
+      h = candidate;
+      created = true;
+      break;
+    }
+  }
+
+  if(!created || !h){
+    toast("Could not allocate a unique house code");
+    return;
+  }
+
+  saveHouse(h);
+  if(isCloudReady()) subscribeToHouseCloud(h.id);
+
+  $("hostSetupResult").classList.remove("hidden");
+  $("joinCodeText").textContent = h.id;
+  showLeftSection("bankerLive");
+  setStatus("House created");
+  toast(`House created: ${h.id}`);
+  renderAll();
+}
+
+async function resetHouseAction(){
+  if(!currentHouseId) return;
+  if(!confirm("Reset this house? (All seats, requests, totals will be wiped)")) return;
+
+  if(isCloudReady()){
+    try{
+      await getHouseRef(currentHouseId).delete();
+    }catch(err){
+      console.error(err);
+      toast("Could not delete cloud house");
+      return;
+    }
+  }
+
+  delete state.houses[currentHouseId];
+  state.activeHouseId = null;
+  currentHouseId = null;
+  myPlayerId = null;
+  saveState();
+  toast("House reset");
+  renderAll();
+}
+
+/* -------------------------
+   Actions: Join
+-------------------------- */
+async function joinWithCodeAction(){
+  const code = ($("joinCodeInput").value||"").trim().toUpperCase();
+  if(!code){
+    shake($("joinCodeInput"));
+    toast("Enter join code");
+    return;
+  }
+
+  if(!state.houses[code] && isCloudReady()){
+    try{
+      const fetched = await fetchHouseFromCloud(code);
+      if(!fetched){
+        shake($("joinCodeInput"));
+        toast("House not found in cloud");
+        return;
+      }
+    }catch(err){
+      console.error(err);
+      shake($("joinCodeInput"));
+      toast("Cloud lookup failed");
+      return;
+    }
+  }
+
+  if(!state.houses[code]){
+    shake($("joinCodeInput"));
+    toast("House not found in this browser storage");
+    return;
+  }
+
+  ensureHouseLoaded(code);
+  if(role === "PLAYER"){
+    const h = house();
+    if(h && myPlayerId && !h.players.some(p=>p.id===myPlayerId)){
+      myPlayerId = null;
+    }
+  }
+  setStatus(`House loaded: ${code}`);
+  toast(`Loaded house ${code}`);
+  renderAll();
+}
+
+async function confirmSeatAction(){
+  const h = house();
+  if(!h){ toast("Load a house first"); return; }
+
+  const pid = $("seatSelect").value;
+  const nm = ($("playerName").value||"").trim();
+  const cleanName = nm ? nm.slice(0, 40) : "";
+
+  const result = await mutateActiveHouse((next)=>{
+    const p = next.players.find(x=>x.id===pid);
+    if(!p) return { ok:false, code:"INVALID_SEAT" };
+    if(p.joined && pid !== myPlayerId) return { ok:false, code:"SEAT_TAKEN" };
+    p.joined = true;
+    if(cleanName) p.name = cleanName;
+    return { ok:true };
+  });
+
+  if(!result.ok){
+    if(result.code === "SEAT_TAKEN") toast("Seat already taken");
+    else if(result.code === "INVALID_SEAT") toast("Invalid seat");
+    else toast("Could not join seat");
+    return;
+  }
+
+  myPlayerId = pid;
+  saveSession();
+  const updated = house();
+  const p = updated?.players.find(x=>x.id===pid);
+  toast(`Entered as ${p?.name || "Player"}`);
+  setStatus("In House");
+  renderAll();
+  showLeftSection("playerLive");
+}
+
+/* -------------------------
+   Actions: Game control
+-------------------------- */
+async function startGameAction(){
+  const h = house();
+  if(!h) return;
+  const at = now();
+  const result = await mutateActiveHouse((next)=>{
+    if(next.status === "ended") return { ok:false, code:"ENDED" };
+    next.status = "live";
+    next.audit.push({ts: at, type:"GAME_START", by:"BANKER"});
+    return { ok:true };
+  });
+  if(!result.ok){
+    toast(result.code === "ENDED" ? "Game already ended" : "Could not start game");
+    return;
+  }
+  toast("Game started");
+  renderAll();
+}
+
+async function endGameAction(){
+  const h = house();
+  if(!h) return;
+  const pending = h.requests.filter(r=>r.status==="PENDING").length;
+  if(pending && !confirm(`There are ${pending} pending requests. End game anyway?`)) return;
+  const at = now();
+  const result = await mutateActiveHouse((next)=>{
+    next.status = "ended";
+    next.audit.push({ts: at, type:"GAME_END", by:"BANKER"});
+    return { ok:true };
+  });
+  if(!result.ok){
+    toast("Could not end game");
+    return;
+  }
+  toast("Game ended");
+  renderAll();
+}
+
+/* -------------------------
+   Actions: Requests
+-------------------------- */
+async function sendBuyinReqAction(){
+  const h = house();
+  if(!h || !myPlayerId){ toast("Join first"); return; }
+  if(h.status !== "live"){
+    toast("Buy-ins open after banker starts the game");
+    return;
+  }
+
+  const count = parseInt($("reqBuyins").value||"0",10);
+  if(!(count>0)){
+    shake($("reqBuyins"));
+    toast("Enter buy-in count");
+    return;
+  }
+
+  const reqId = uid();
+  const ts = now();
+  const result = await mutateActiveHouse((next)=>{
+    if(next.status !== "live") return { ok:false, code:"NOT_LIVE" };
+    const p = next.players.find(x=>x.id===myPlayerId);
+    if(!p) return { ok:false, code:"PLAYER_MISSING" };
+    next.requests.push({
+      id: reqId,
+      ts,
+      playerId: myPlayerId,
+      type: "BUYIN",
+      buyinsCount: count,
+      chips: null,
+      status: "PENDING",
+      reason: ""
+    });
+    next.audit.push({ts, type:"REQ_BUYIN", by: myPlayerId, detail:{count}});
+    return { ok:true };
+  });
+
+  if(!result.ok){
+    toast("Could not send request");
+    return;
+  }
+
+  toast("Buy-in request sent");
+  renderAll();
+}
+
+async function sendReturnReqAction(){
+  const h = house();
+  if(!h || !myPlayerId){ toast("Join first"); return; }
+  if(h.status !== "live"){
+    toast("Returns open after banker starts the game");
+    return;
+  }
+
+  const chips = parseInt($("reqReturn").value||"0",10);
+  if(!(chips>0)){
+    shake($("reqReturn"));
+    toast("Enter chips to return");
+    return;
+  }
+
+  const reqId = uid();
+  const ts = now();
+  const result = await mutateActiveHouse((next)=>{
+    if(next.status !== "live") return { ok:false, code:"NOT_LIVE" };
+    const me = next.players.find(x=>x.id===myPlayerId);
+    if(!me) return { ok:false, code:"PLAYER_MISSING" };
+
+    const available = Math.max(0, me.chipsGiven - me.chipsReturned - pendingReturnsForPlayer(next, myPlayerId));
+    if(chips > available) return { ok:false, code:`RETURN_TOO_HIGH:${available}` };
+
+    next.requests.push({
+      id: reqId,
+      ts,
+      playerId: myPlayerId,
+      type: "RETURN",
+      buyinsCount: null,
+      chips,
+      status: "PENDING",
+      reason: ""
+    });
+    next.audit.push({ts, type:"REQ_RETURN", by: myPlayerId, detail:{chips}});
+    return { ok:true };
+  });
+
+  if(!result.ok){
+    if(String(result.code).startsWith("RETURN_TOO_HIGH:")){
+      const max = result.code.split(":")[1] || "0";
+      shake($("reqReturn"));
+      toast(`Max return right now is ${max}`);
+      return;
+    }
+    toast("Could not send request");
+    return;
+  }
+
+  $("reqReturn").value = "";
+
+  toast("Return request sent");
+  renderAll();
+}
+
+async function approveRequest(reqId){
+  const h = house();
+  if(!h || h.status==="ended") return;
+  const ts = now();
+  const result = await mutateActiveHouse((next)=>{
+    if(next.status === "ended") return { ok:false, code:"ENDED" };
+    const r = next.requests.find(x=>x.id===reqId);
+    if(!r || r.status!=="PENDING") return { ok:false, code:"MISSING_REQUEST" };
+
+    const p = next.players.find(x=>x.id===r.playerId);
+    if(!p){
+      r.status = "REJECTED";
+      r.reason = "Player seat missing";
+      next.audit.push({ts, type:"REQ_REJECTED", by:"BANKER", detail:{reqId, reason:r.reason}});
+      return { ok:true };
+    }
+
+    if(r.type==="BUYIN"){
+      const c = Math.max(1, parseInt(r.buyinsCount||1,10));
+      const chips = c * next.chipValuePerBuyin;
+      p.buyinsApproved += c;
+      p.chipsGiven += chips;
+    } else {
+      const chips = Math.max(1, parseInt(r.chips||0,10));
+      const maxAllowed = Math.max(0, p.chipsGiven - p.chipsReturned);
+      if(chips > maxAllowed){
+        r.status = "REJECTED";
+        r.reason = `Return exceeds available chips (${maxAllowed})`;
+        next.audit.push({ts, type:"REQ_REJECTED", by:"BANKER", detail:{reqId, reason:r.reason}});
+        return { ok:false, code:"RETURN_TOO_HIGH" };
+      }
+      p.chipsReturned += chips;
+    }
+
+    r.status = "APPROVED";
+    r.reason = "";
+    next.audit.push({ts, type:"REQ_APPROVED", by:"BANKER", detail:{reqId}});
+    return { ok:true };
+  });
+
+  if(!result.ok && result.code === "RETURN_TOO_HIGH"){
+    toast("Rejected: return too high");
+    renderAll();
+    return;
+  }
+  if(!result.ok && result.code !== "MISSING_REQUEST"){
+    toast("Could not approve request");
+    return;
+  }
+  toast("Approved");
+  renderAll();
+}
+
+async function rejectRequest(reqId, reason = "Rejected by banker"){
+  const h = house();
+  if(!h) return;
+  const ts = now();
+  const result = await mutateActiveHouse((next)=>{
+    const r = next.requests.find(x=>x.id===reqId);
+    if(!r || r.status!=="PENDING") return { ok:false, code:"MISSING_REQUEST" };
+    r.status = "REJECTED";
+    r.reason = reason;
+    next.audit.push({ts, type:"REQ_REJECTED", by:"BANKER", detail:{reqId, reason}});
+    return { ok:true };
+  });
+  if(!result.ok && result.code !== "MISSING_REQUEST"){
+    toast("Could not reject request");
+    return;
+  }
+  toast("Rejected");
+  renderAll();
+}
+
+async function cancelOwnRequest(reqId){
+  const h = house();
+  if(!h || !myPlayerId) return;
+  const ts = now();
+  const result = await mutateActiveHouse((next)=>{
+    const r = next.requests.find(x=>x.id===reqId);
+    if(!r || r.playerId !== myPlayerId || r.status !== "PENDING"){
+      return { ok:false, code:"MISSING_REQUEST" };
+    }
+    r.status = "CANCELLED";
+    r.reason = "Cancelled by player";
+    next.audit.push({ts, type:"REQ_CANCELLED", by: myPlayerId, detail:{reqId}});
+    return { ok:true };
+  });
+  if(!result.ok && result.code !== "MISSING_REQUEST"){
+    toast("Could not cancel request");
+    return;
+  }
+  toast("Request cancelled");
+  renderAll();
+}
+
+/* -------------------------
+   Export / Import / Wipe
+-------------------------- */
+function downloadFile(filename, mime, content){
+  const blob = new Blob([content], {type: mime});
+  const a = document.createElement("a");
+  const href = URL.createObjectURL(blob);
+  a.href = href;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(href);
+}
+
+function copyToClipboard(text){
+  if(navigator.clipboard?.writeText){
+    return navigator.clipboard.writeText(text);
+  }
+  return Promise.reject(new Error("Clipboard API unavailable"));
+}
+
+function exportJsonAction(){
+  const data = JSON.stringify(state, null, 2);
+  copyToClipboard(data).then(
+    ()=>toast("Copied JSON"),
+    ()=>{
+      downloadFile("gilded-poker-house.json", "application/json", data);
+      toast("Downloaded JSON");
+    }
+  );
+}
+
+function exportCsvAction(){
+  const h = house();
+  if(!h){
+    toast("No active house");
+    return;
+  }
+
+  const header = ["House","Seat","Player","Joined","BuyinsApproved","ChipsGiven","ChipsReturned","NetOut"]; 
+  const rows = h.players.map(p=>[
+    h.id,
+    p.seat,
+    `"${String(p.name).replaceAll('"','""')}"`,
+    p.joined ? "yes" : "no",
+    p.buyinsApproved,
+    p.chipsGiven,
+    p.chipsReturned,
+    p.chipsGiven - p.chipsReturned
+  ]);
+
+  const csv = [header.join(","), ...rows.map(r=>r.join(","))].join("\n");
+  downloadFile(`gilded-poker-house-${h.id}.csv`, "text/csv", csv);
+  toast("Downloaded CSV");
+}
+
+function importShow(){
+  $("importBox").classList.remove("hidden");
+  $("importText").value = "";
+}
+
+function importCancel(){
+  $("importBox").classList.add("hidden");
+}
+
+async function importDo(){
+  try{
+    const obj = JSON.parse($("importText").value);
+    const normalized = normalizeState(obj);
+    state = normalized;
+    currentHouseId = state.activeHouseId || null;
+    myPlayerId = null;
+    saveState();
+
+    if(isCloudReady() && currentHouseId && state.houses[currentHouseId]){
+      await upsertHouseToCloud(state.houses[currentHouseId]).catch((err)=>console.error(err));
+      subscribeToHouseCloud(currentHouseId);
+    }
+
+    $("importBox").classList.add("hidden");
+    toast("Imported");
+    renderAll();
+  }catch{
+    toast("Invalid JSON");
+    shake($("importText"));
+  }
+}
+
+async function wipeHouseAction(){
+  if(!confirm("Wipe all houses and data?")) return;
+
+  if(isCloudReady()){
+    const ids = Object.keys(state.houses);
+    for(const id of ids){
+      try{
+        await getHouseRef(id).delete();
+      }catch(err){
+        console.error(err);
+      }
+    }
+  }
+
+  localStorage.removeItem(STORAGE_KEY);
+  state = defaultState();
+  currentHouseId = null;
+  myPlayerId = null;
+  role = null;
+  saveSession();
+  toast("Wiped");
+  gotoHome();
+  renderAll();
+}
+
+function clearAllAction(){
+  if(!confirm("Clear all local data?")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(CLOUD_MODE_KEY);
+  state = defaultState();
+  currentHouseId = null;
+  myPlayerId = null;
+  role = null;
+  disconnectCloudAction(false);
+  $("firebaseConfig").value = loadSavedFirebaseConfigText();
+  setCloudStatus("Local mode");
+  toast("Cleared");
+  gotoHome();
+  renderAll();
+}
+
+/* -------------------------
+   Navigation / Mode
+-------------------------- */
+function enterHost(){
+  role = "BANKER";
+  gotoApp();
+  setStatus("Banker mode");
+
+  if(state.activeHouseId && state.houses[state.activeHouseId]){
+    currentHouseId = state.activeHouseId;
+    if(isCloudReady()) subscribeToHouseCloud(currentHouseId);
+    $("hostSetupResult").classList.remove("hidden");
+    showLeftSection("bankerLive");
+    toast(`Loaded house ${currentHouseId}`);
+  } else {
+    showLeftSection("hostSetup");
+  }
+  renderAll();
+  saveSession();
+}
+
+function enterJoin(){
+  role = "PLAYER";
+  gotoApp();
+  showLeftSection("playerJoin");
+  setStatus("Player mode");
+  renderAll();
+
+  const code = parseJoinFromHash();
+  if(code){
+    $("joinCodeInput").value = code;
+    joinWithCodeAction();
+  }
+  saveSession();
+}
+
+function backHome(){
+  role = null;
+  myPlayerId = null;
+  currentHouseId = state.activeHouseId || null;
+  gotoHome();
+  saveSession();
+}
+
+/* -------------------------
+   Hash join support
+-------------------------- */
+function parseJoinFromHash(){
+  const h = location.hash || "";
+  const m = h.match(/join=([A-Za-z0-9]+)/);
+  return m ? m[1].toUpperCase() : null;
+}
+
+/* -------------------------
+   Events
+-------------------------- */
+$("goHost").addEventListener("click", enterHost);
+$("goJoin").addEventListener("click", enterJoin);
+
+$("createHouse").addEventListener("click", createHouseAction);
+$("resetHouse").addEventListener("click", resetHouseAction);
+
+$("copyCode").addEventListener("click", ()=>{
+  const h = house(); if(!h) return;
+  copyToClipboard(h.id).then(()=>toast("Code copied"), ()=>toast("Copy failed"));
+});
+
+$("copyLink").addEventListener("click", ()=>{
+  const h = house(); if(!h) return;
+  const link = makeJoinLink(h.id);
+  copyToClipboard(link).then(()=>toast("Link copied"), ()=>toast("Copy failed"));
+});
+
+$("joinWithCode").addEventListener("click", joinWithCodeAction);
+$("confirmSeat").addEventListener("click", confirmSeatAction);
+
+$("startGame").addEventListener("click", startGameAction);
+$("endGame").addEventListener("click", endGameAction);
+
+$("sendBuyinReq").addEventListener("click", sendBuyinReqAction);
+$("sendReturnReq").addEventListener("click", sendReturnReqAction);
+
+$("exportJson").addEventListener("click", exportJsonAction);
+$("exportCsv").addEventListener("click", exportCsvAction);
+$("showImport").addEventListener("click", importShow);
+$("doImport").addEventListener("click", importDo);
+$("cancelImport").addEventListener("click", importCancel);
+
+$("connectCloud").addEventListener("click", connectCloudAction);
+$("saveCloudConfig").addEventListener("click", saveCloudConfigAction);
+$("disconnectCloud").addEventListener("click", ()=>disconnectCloudAction(true));
+
+$("wipeHouse").addEventListener("click", wipeHouseAction);
+$("clearAll").addEventListener("click", clearAllAction);
+
+$("backHome1").addEventListener("click", backHome);
+$("backHome2").addEventListener("click", backHome);
+
+// quick keyboard flow
+$("joinCodeInput").addEventListener("keydown", (e)=>{ if(e.key === "Enter") joinWithCodeAction(); });
+$("playerName").addEventListener("keydown", (e)=>{ if(e.key === "Enter") confirmSeatAction(); });
+$("reqBuyins").addEventListener("keydown", (e)=>{ if(e.key === "Enter") sendBuyinReqAction(); });
+$("reqReturn").addEventListener("keydown", (e)=>{ if(e.key === "Enter") sendReturnReqAction(); });
+
+/* -------------------------
+   Sync between tabs
+-------------------------- */
+if (bc){
+  bc.onmessage = (ev)=>{
+    if (ev?.data?.type === "STATE_UPDATED") onExternalUpdate();
+  };
+}
+
+window.addEventListener("storage", (e)=>{
+  if (e.key === STORAGE_KEY) onExternalUpdate();
+});
+
+/* -------------------------
+   Boot
+-------------------------- */
+(async function boot(){
+  // If session references missing house, clear stale pointers.
+  if(currentHouseId && !state.houses[currentHouseId]) currentHouseId = null;
+  if(currentHouseId) state.activeHouseId = currentHouseId;
+
+  const savedCfg = loadSavedFirebaseConfigText();
+  $("firebaseConfig").value = savedCfg;
+  setCloudStatus("Local mode");
+  $("cloudHint").textContent = "Using local browser storage only.";
+
+  if(loadCloudModePref() && savedCfg){
+    await connectCloudAction();
+  }
+
+  const code = parseJoinFromHash();
+  if(code){
+    gotoHome();
+    await enterJoin();
+    renderAll();
+    return;
+  }
+
+  if(role === "BANKER"){
+    gotoApp();
+    if(state.activeHouseId && state.houses[state.activeHouseId]){
+      showLeftSection("bankerLive");
+    } else {
+      showLeftSection("hostSetup");
+    }
+    setStatus("Banker mode");
+  } else if(role === "PLAYER"){
+    gotoApp();
+    showLeftSection(myPlayerId ? "playerLive" : "playerJoin");
+    setStatus("Player mode");
+  } else {
+    gotoHome();
+  }
+
+  saveSession();
+  renderAll();
+})();
+</script>
+</body>
+</html>

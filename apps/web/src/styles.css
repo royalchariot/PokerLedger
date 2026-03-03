@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Playfair+Display:wght@400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #070707;
+  color: #f7f3e7;
+  font-family: "Playfair Display", serif;
+}
+
+.input {
+  @apply w-full rounded-xl border border-gold-500/30 bg-black/30 px-3 py-2 text-sm text-gold-100 outline-none transition focus:border-gold-300;
+}
+
+.btn {
+  @apply rounded-xl px-4 py-2 font-semibold transition active:scale-[0.98];
+}
+
+.btn-gold {
+  @apply btn bg-gradient-to-b from-gold-300 to-gold-500 text-black shadow-glow hover:brightness-110;
+}
+
+.btn-ghost {
+  @apply btn border border-gold-500/30 bg-black/30 text-gold-100 hover:bg-black/40;
+}
+
+.card {
+  @apply rounded-2xl border border-gold-500/20 bg-black/30 p-4 shadow-2xl;
+}

@@ -1,0 +1,52 @@
+# MongoDB Schema (Room)
+
+## Document: `rooms`
+- `code` (String, unique 6-digit)
+- `status` (`OPEN` | `LOCKED` | `ENDED`)
+- `banker`
+  - `bankerId`
+  - `name`
+  - `pinHash`
+- `settings`
+  - `buyInValue`
+  - `maxPlayers`
+- `players[]`
+  - `playerId`
+  - `name`
+  - `seatNo`
+  - `connected`
+  - `totalBuyIns`
+  - `totalReturned`
+  - `netPosition`
+  - `netResult`
+- `requests[]`
+  - `requestId`
+  - `playerId`
+  - `playerName`
+  - `type` (`BUY_IN` | `RETURN`)
+  - `amount`
+  - `status` (`PENDING` | `APPROVED` | `REJECTED`)
+  - `reason`
+  - `createdAt`
+  - `resolvedAt`
+  - `resolvedBy`
+- `totals`
+  - `totalBuyIns`
+  - `totalReturned`
+  - `totalLiability`
+  - `totalChips`
+- `sessionLocked`
+- `endedAt`
+- `settlementTransfers[]`
+  - `fromPlayerId`
+  - `fromName`
+  - `toPlayerId`
+  - `toName`
+  - `amount`
+- `auditLogs[]`
+  - `at`
+  - `actorRole`
+  - `actorId`
+  - `action`
+  - `metadata`
+- `expiresAt` (TTL index)

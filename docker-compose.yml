@@ -1,0 +1,41 @@
+version: "3.9"
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: gilded-poker
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongo:27017/gilded-poker
+      JWT_SECRET: change-this-in-prod
+      JWT_TTL: 12h
+      CORS_ORIGIN: http://localhost:5173
+      ROOM_TTL_HOURS: 24
+      REQUEST_DEDUP_MS: 15000
+    ports:
+      - "4000:4000"
+    depends_on:
+      - mongo
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+volumes:
+  mongo_data:

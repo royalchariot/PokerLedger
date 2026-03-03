@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: gilded-poker-api
+    env: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_TTL
+        value: 12h
+      - key: CORS_ORIGIN
+        sync: false
+      - key: ROOM_TTL_HOURS
+        value: 24
+      - key: REQUEST_DEDUP_MS
+        value: 15000
+
+  - type: web
+    name: gilded-poker-web
+    env: static
+    rootDir: apps/web
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    plan: free
+    envVars:
+      - key: VITE_API_URL
+        sync: false
