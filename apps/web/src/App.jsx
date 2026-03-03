@@ -746,19 +746,17 @@ export default function App() {
 
   if (!auth && houseAuth && house) {
     return (
-      <div className="min-h-screen bg-table text-gold-100">
+      <div className="app-shell min-h-screen text-gold-100">
         <div className="mx-auto max-w-7xl px-4 py-6">
-          <header className="mb-4 rounded-2xl border border-gold-500/20 bg-black/30 p-4">
+          <header className="header-glass mb-4 rounded-2xl border border-gold-500/20 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h1 className="font-cinzel text-2xl font-black">Welcome to Poker House</h1>
-                <p className="text-sm text-gold-100/70">
-                  {house.roomName} • Code {house.roomCode} • + means net won, - means net lost
-                </p>
-              </div>
+              <BrandLockup
+                title="Welcome to Poker House"
+                subtitle={`${house.roomName} • Code ${house.roomCode} • + means net won, - means net lost`}
+              />
               <div className="flex flex-wrap gap-2">
                 <span
-                  className={`rounded-full border px-3 py-1 text-xs ${
+                  className={`live-pill rounded-full border px-3 py-1 text-xs ${
                     houseConnected ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-100" : "border-red-500/40 bg-red-500/20 text-red-100"
                   }`}
                 >
@@ -978,26 +976,27 @@ export default function App() {
 
   if (!auth) {
     return (
-      <div className="min-h-screen bg-table text-gold-100">
+      <div className="app-shell min-h-screen text-gold-100">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <header className="mb-6 text-center">
-            <h1 className="font-cinzel text-3xl font-black tracking-wide">Welcome to Poker House</h1>
-            <p className="mt-2 text-gold-100/70">
-              Choose one option to continue. New players send a join request and banker approval is required.
-            </p>
+          <header className="mb-6">
+            <BrandLockup
+              centered
+              title="Welcome to Poker House"
+              subtitle="Choose one option to continue. New players send a join request and banker approval is required."
+            />
           </header>
 
           {entryMode === "CHOICE" ? (
             <div className="grid gap-4 md:grid-cols-3">
-              <button className="card text-left transition hover:border-gold-300/50" onClick={() => setEntryMode("CREATE")}>
+              <button className="card interactive-tile text-left transition hover:border-gold-300/50" onClick={() => setEntryMode("CREATE")}>
                 <h2 className="font-cinzel text-xl">Create Room</h2>
                 <p className="mt-1 text-sm text-gold-100/70">Banker creates a new room and controls approvals.</p>
               </button>
-              <button className="card text-left transition hover:border-gold-300/50" onClick={() => setEntryMode("JOIN")}>
+              <button className="card interactive-tile text-left transition hover:border-gold-300/50" onClick={() => setEntryMode("JOIN")}>
                 <h2 className="font-cinzel text-xl">Join Room</h2>
                 <p className="mt-1 text-sm text-gold-100/70">Send join request to banker for approval.</p>
               </button>
-              <button className="card text-left transition hover:border-gold-300/50" onClick={() => setEntryMode("EXISTING")}>
+              <button className="card interactive-tile text-left transition hover:border-gold-300/50" onClick={() => setEntryMode("EXISTING")}>
                 <h2 className="font-cinzel text-xl">Existing Room</h2>
                 <p className="mt-1 text-sm text-gold-100/70">Return to a room you have already played in.</p>
               </button>
@@ -1164,27 +1163,27 @@ export default function App() {
 
   if (!room) {
     return (
-      <div className="grid min-h-screen place-items-center bg-table">
+      <div className="app-shell grid min-h-screen place-items-center">
         <div className="card">Loading room state...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-table text-gold-100">
+    <div className="app-shell min-h-screen text-gold-100">
       <div className="mx-auto max-w-7xl px-4 py-6">
-        <header className="mb-4 rounded-2xl border border-gold-500/20 bg-black/30 p-4">
+        <header className="header-glass mb-4 rounded-2xl border border-gold-500/20 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="font-cinzel text-2xl font-black">Room {room.code}</h1>
-              <p className="text-sm text-gold-100/70">
-                Banker: {room.bankerName} • 1 Buy-In: {toCash(room.buyInCash || room.buyInValue)} = {room.buyInChips || room.buyInValue} chips
-              </p>
-            </div>
+            <BrandLockup
+              title={`Room ${room.code}`}
+              subtitle={`Banker: ${room.bankerName} • 1 Buy-In: ${toCash(room.buyInCash || room.buyInValue)} = ${
+                room.buyInChips || room.buyInValue
+              } chips`}
+            />
             <div className="flex flex-wrap gap-2">
               <span className={`rounded-full border px-3 py-1 text-xs ${statusBadge(room.status)}`}>{room.status}</span>
               <span
-                className={`rounded-full border px-3 py-1 text-xs ${
+                className={`live-pill rounded-full border px-3 py-1 text-xs ${
                   isConnected ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-100" : "border-red-500/40 bg-red-500/20 text-red-100"
                 }`}
               >
@@ -1323,6 +1322,47 @@ function connectSocketProxy(token, setRoom, setToast, role, setPendingAlert, set
   socket.on("error:domain", ({ message }) => setToast(message));
 
   return socket;
+}
+
+function GoldenSpadeLogo({ size = 52 }) {
+  return (
+    <span className="brand-logo-shell" style={{ width: size, height: size }}>
+      <svg className="spade-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="spadeGoldFill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#FFE9B4" />
+            <stop offset="52%" stopColor="#D9A54A" />
+            <stop offset="100%" stopColor="#8B621D" />
+          </linearGradient>
+          <linearGradient id="spadeShine" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FFF6DE" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="#FFF6DE" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M50 8C39 21 22 32 22 52C22 65 31 73 43 73C46 73 49 72 50 70C51 72 54 73 57 73C69 73 78 65 78 52C78 32 61 21 50 8Z"
+          fill="url(#spadeGoldFill)"
+          stroke="#F5D088"
+          strokeOpacity="0.95"
+          strokeWidth="1.8"
+        />
+        <path d="M43 73C45 79 42 84 37 90H63C58 84 55 79 57 73H43Z" fill="url(#spadeGoldFill)" stroke="#F5D088" strokeWidth="1.2" />
+        <path d="M50 17C42 27 31 35 31 49C31 57 36 62 43 62C46 62 48 61 50 59C52 61 54 62 57 62C64 62 69 57 69 49C69 35 58 27 50 17Z" fill="url(#spadeShine)" />
+      </svg>
+    </span>
+  );
+}
+
+function BrandLockup({ title, subtitle, centered = false }) {
+  return (
+    <div className={`brand-lockup ${centered ? "centered" : ""}`}>
+      <GoldenSpadeLogo size={centered ? 58 : 50} />
+      <div>
+        <h1 className={`font-cinzel ${centered ? "text-3xl" : "text-2xl"} font-black tracking-wide`}>{title}</h1>
+        {subtitle ? <p className="brand-subtitle text-sm">{subtitle}</p> : null}
+      </div>
+    </div>
+  );
 }
 
 function Metric({ label, value }) {

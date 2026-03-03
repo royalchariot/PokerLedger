@@ -8,30 +8,200 @@
   color-scheme: dark;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   background: #070707;
   color: #f7f3e7;
   font-family: "Playfair Display", serif;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.app-shell::before {
+  content: "";
+  position: fixed;
+  inset: -2%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(6, 6, 6, 0.4), rgba(6, 6, 6, 0.82)),
+    radial-gradient(950px 520px at 50% 12%, rgba(255, 198, 92, 0.14), transparent 65%),
+    radial-gradient(860px 460px at 50% 100%, rgba(255, 170, 42, 0.09), transparent 68%),
+    url("/poker-room-bg.svg");
+  background-size: cover;
+  background-position: center;
+  filter: saturate(1.08) brightness(0.62) contrast(1.08);
+}
+
+.app-shell::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1300px 650px at 50% 0%, rgba(0, 0, 0, 0.18), transparent 58%),
+    linear-gradient(180deg, rgba(5, 5, 5, 0.3) 0%, rgba(4, 4, 4, 0.9) 100%);
+}
+
+.header-glass {
+  background: linear-gradient(180deg, rgba(8, 8, 8, 0.58), rgba(8, 8, 8, 0.42));
+  backdrop-filter: blur(8px);
+}
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.brand-lockup.centered {
+  justify-content: center;
+}
+
+.brand-lockup.centered > div {
+  text-align: center;
+}
+
+.brand-logo-shell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: radial-gradient(110% 110% at 18% 15%, rgba(255, 236, 191, 0.4), rgba(22, 15, 4, 0.85));
+  box-shadow:
+    0 0 0 1px rgba(255, 216, 134, 0.32),
+    0 0 28px rgba(255, 196, 66, 0.28),
+    inset 0 0 18px rgba(255, 227, 160, 0.08);
+}
+
+.spade-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 9px rgba(255, 199, 70, 0.52));
+}
+
+.brand-subtitle {
+  margin-top: 0.1rem;
+  color: rgba(255, 245, 212, 0.72);
 }
 
 .input {
-  @apply w-full rounded-xl border border-gold-500/30 bg-black/30 px-3 py-2 text-sm text-gold-100 outline-none transition focus:border-gold-300;
+  @apply w-full rounded-xl border border-gold-500/35 bg-black/45 px-3 py-2 text-sm text-gold-100 outline-none transition focus:border-gold-300;
+  box-shadow: inset 0 1px 0 rgba(255, 234, 187, 0.08);
+  backdrop-filter: blur(4px);
 }
 
 .btn {
-  @apply rounded-xl px-4 py-2 font-semibold transition active:scale-[0.98];
+  @apply relative overflow-hidden rounded-xl px-4 py-2 font-semibold transition active:scale-[0.98];
 }
 
 .btn-gold {
-  @apply btn bg-gradient-to-b from-gold-300 to-gold-500 text-black shadow-glow hover:brightness-110;
+  @apply btn border border-gold-300/45 bg-gradient-to-b from-[#ffe19e] via-[#f2c35f] to-[#b9862a] text-black shadow-glow hover:brightness-110;
+}
+
+.btn-gold::after {
+  content: "";
+  position: absolute;
+  inset: -1px auto -1px -48%;
+  width: 42%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  transform: skewX(-18deg);
+  animation: shimmerSweep 2.8s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .btn-ghost {
-  @apply btn border border-gold-500/30 bg-black/30 text-gold-100 hover:bg-black/40;
+  @apply btn border border-gold-500/30 bg-black/40 text-gold-100 hover:bg-black/50;
+  box-shadow: inset 0 1px 0 rgba(255, 231, 177, 0.05);
 }
 
 .card {
-  @apply rounded-2xl border border-gold-500/20 bg-black/30 p-4 shadow-2xl;
+  @apply rounded-2xl border border-gold-500/20 bg-black/35 p-4 shadow-2xl;
+  backdrop-filter: blur(8px);
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 214, 122, 0.38);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.52),
+    0 0 0 1px rgba(255, 216, 134, 0.07);
+}
+
+.interactive-tile {
+  position: relative;
+  overflow: hidden;
+}
+
+.interactive-tile::before {
+  content: "";
+  position: absolute;
+  inset: auto -20% -60% -20%;
+  height: 75%;
+  background: radial-gradient(80% 100% at 50% 0%, rgba(255, 202, 94, 0.22), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.interactive-tile:hover::before {
+  opacity: 1;
+}
+
+.live-pill {
+  animation: pulseSoft 2.2s ease-in-out infinite;
+}
+
+tbody tr {
+  transition: background-color 0.14s ease;
+}
+
+tbody tr:hover {
+  background-color: rgba(214, 168, 79, 0.06);
+}
+
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(0) skewX(-18deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.7;
+  }
+  32% {
+    transform: translateX(285%) skewX(-18deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(285%) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
+@keyframes pulseSoft {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 212, 121, 0.18);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 212, 121, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 212, 121, 0);
+  }
 }

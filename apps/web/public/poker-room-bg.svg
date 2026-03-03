@@ -1,0 +1,53 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="roomGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(960 120) rotate(90) scale(460 980)">
+      <stop stop-color="#40260B" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#080808" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cardGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1115 480) rotate(90) scale(220 260)">
+      <stop stop-color="#FFDF98" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#FFDF98" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="goldEdge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFE6A8"/>
+      <stop offset="0.5" stop-color="#D8A84B"/>
+      <stop offset="1" stop-color="#8C611D"/>
+    </linearGradient>
+    <linearGradient id="felt" x1="960" y1="700" x2="960" y2="1080" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#121212"/>
+      <stop offset="1" stop-color="#040404"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1920" height="1080" fill="#060606"/>
+  <rect width="1920" height="1080" fill="url(#roomGlow)"/>
+  <rect x="0" y="0" width="1920" height="1080" fill="url(#felt)" opacity="0.65"/>
+
+  <ellipse cx="960" cy="1010" rx="880" ry="270" fill="#101010"/>
+  <ellipse cx="960" cy="1010" rx="820" ry="220" fill="#0C0C0C" stroke="#5B4215" stroke-opacity="0.75" stroke-width="3"/>
+  <ellipse cx="960" cy="1020" rx="620" ry="155" fill="#090909" stroke="#C19646" stroke-opacity="0.55" stroke-width="2"/>
+
+  <ellipse cx="960" cy="370" rx="260" ry="360" fill="#0A0A0A" opacity="0.7"/>
+  <rect x="860" y="270" width="200" height="430" rx="74" fill="#0B0B0B" opacity="0.85"/>
+
+  <g opacity="0.75">
+    <ellipse cx="1000" cy="780" rx="52" ry="18" fill="#000" opacity="0.45"/>
+    <ellipse cx="1068" cy="770" rx="52" ry="16" fill="#000" opacity="0.45"/>
+    <ellipse cx="1132" cy="782" rx="52" ry="18" fill="#000" opacity="0.45"/>
+    <rect x="950" y="700" width="98" height="75" rx="9" fill="#111"/>
+    <rect x="952" y="698" width="94" height="10" fill="#C09547"/>
+    <rect x="1020" y="682" width="92" height="88" rx="9" fill="#111"/>
+    <rect x="1022" y="680" width="88" height="10" fill="#C09547"/>
+    <rect x="1086" y="712" width="90" height="70" rx="9" fill="#111"/>
+    <rect x="1088" y="710" width="86" height="10" fill="#C09547"/>
+  </g>
+
+  <rect x="1015" y="360" width="270" height="380" rx="22" transform="rotate(25 1015 360)" fill="#131313" stroke="url(#goldEdge)" stroke-width="8"/>
+  <rect x="1040" y="390" width="220" height="320" rx="14" transform="rotate(25 1040 390)" fill="#101010" stroke="url(#goldEdge)" stroke-opacity="0.8" stroke-width="2"/>
+
+  <path d="M1120 497C1098 521 1070 543 1070 579C1070 602 1087 620 1109 620C1115 620 1121 619 1126 616C1131 619 1137 620 1143 620C1165 620 1182 602 1182 579C1182 543 1154 521 1132 497C1129 494 1123 494 1120 497Z" fill="url(#goldEdge)"/>
+  <path d="M1115 620C1118 634 1111 648 1102 662H1150C1141 648 1134 634 1137 620H1115Z" fill="#C89B47"/>
+
+  <rect width="1920" height="1080" fill="url(#cardGlow)" opacity="0.52"/>
+  <rect width="1920" height="1080" fill="url(#roomGlow)" opacity="0.45"/>
+</svg>
