@@ -17,6 +17,8 @@ services:
         value: 12h
       - key: CORS_ORIGIN
         sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
       - key: ROOM_TTL_HOURS
         value: 24
       - key: REQUEST_DEDUP_MS
@@ -30,4 +32,6 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
+        sync: false
+      - key: VITE_GOOGLE_CLIENT_ID
         sync: false

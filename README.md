@@ -17,6 +17,8 @@ Real-time poker ledger with banker/player roles, authoritative server validation
 ## Features Delivered
 
 - Home system
+  - Welcome gate: New User (Google + password) / Existing User (email + password)
+  - Account session remembered in browser
   - Create game
   - Join game by 6-digit code
   - Share room link
@@ -81,16 +83,17 @@ Real-time poker ledger with banker/player roles, authoritative server validation
    ```bash
    cp apps/api/.env.example apps/api/.env
    ```
-2. Set `MONGODB_URI` and `JWT_SECRET` in `apps/api/.env`.
-3. Start API:
+2. Set `MONGODB_URI`, `JWT_SECRET`, and `GOOGLE_CLIENT_ID` in `apps/api/.env`.
+3. Set `VITE_GOOGLE_CLIENT_ID` in `apps/web/.env` (same value as `GOOGLE_CLIENT_ID`).
+4. Start API:
    ```bash
    npm run dev -w apps/api
    ```
-4. In another terminal start Web:
+5. In another terminal start Web:
    ```bash
    npm run dev -w apps/web
    ```
-5. Open:
+6. Open:
    - Web: `http://localhost:5173`
    - API Health: `http://localhost:4000/api/health`
 
@@ -129,7 +132,9 @@ docker compose up --build
    - `MONGODB_URI` (Mongo Atlas)
    - `JWT_SECRET`
    - `CORS_ORIGIN` (web URL)
+   - `GOOGLE_CLIENT_ID`
    - `VITE_API_URL` (public API URL + `/api`)
+   - `VITE_GOOGLE_CLIENT_ID`
 
 ## API / Socket Contract (High Level)
 
@@ -138,9 +143,16 @@ House APIs (new):
 - `POST /api/house/rooms/:roomCode/join` join room as player
 - `POST /api/house/rooms/banker/login` banker room login
 - `GET /api/house/rooms/:roomCode/state` room dashboard state
+- `POST /api/house/rooms/:roomCode/join-requests/google` join request with Google Sign-In
+- `POST /api/house/rooms/member/google-login` existing member Google login
 - `POST /api/house/rooms/:roomCode/sessions` create live session inside room (banker)
 - `POST /api/house/rooms/:roomCode/sessions/:sessionCode/enter` enter active session (member)
 - `GET /api/house/rooms/:roomCode/sessions/:sessionCode` session drill-down
+
+User APIs (new):
+- `POST /api/users/signup/google` create/update account via Google and set password
+- `POST /api/users/login` existing user login by email + password
+- `GET /api/users/me` get current account profile
 
 REST:
 - `POST /api/rooms` create game (banker auth token returned)

@@ -1,6 +1,7 @@
 const KEY = "gilded-auth-v2";
 const HOUSE_KEY = "gilded-house-auth-v1";
 const LEGACY_KEY = "gilded-auth-v1";
+const USER_KEY = "gilded-user-auth-v1";
 
 function safeGet(storage, key) {
   try {
@@ -68,4 +69,21 @@ export function loadHouseAuth() {
 
 export function clearHouseAuth() {
   safeRemove(sessionStorage, HOUSE_KEY);
+}
+
+export function saveUserAuth(auth) {
+  safeSet(localStorage, USER_KEY, JSON.stringify(auth));
+}
+
+export function loadUserAuth() {
+  try {
+    const raw = safeGet(localStorage, USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearUserAuth() {
+  safeRemove(localStorage, USER_KEY);
 }

@@ -16,6 +16,7 @@ export const env = {
   mongodbUri: process.env.MONGODB_URI || "",
   jwtSecret: process.env.JWT_SECRET,
   jwtTtl: process.env.JWT_TTL || "12h",
+  googleClientId: String(process.env.GOOGLE_CLIENT_ID || "").trim(),
   roomTtlHours: Number(process.env.ROOM_TTL_HOURS || 24),
   requestDedupMs: Number(process.env.REQUEST_DEDUP_MS || 15000),
 };

@@ -5,6 +5,8 @@ const HouseMemberSchema = new mongoose.Schema(
     userId: { type: String, required: true },
     name: { type: String, required: true, trim: true, maxlength: 40 },
     role: { type: String, enum: ["OWNER", "ADMIN", "PLAYER"], default: "PLAYER" },
+    googleSub: { type: String, default: "" },
+    googleEmail: { type: String, default: "", trim: true, lowercase: true },
     joinedAt: { type: Date, default: Date.now },
     sessionsPlayed: { type: Number, default: 0 },
     lastPlayedAt: { type: Date, default: null },
@@ -48,6 +50,8 @@ const JoinRequestSchema = new mongoose.Schema(
   {
     requestId: { type: String, required: true },
     playerName: { type: String, required: true, trim: true, maxlength: 40 },
+    googleSub: { type: String, default: "" },
+    googleEmail: { type: String, default: "", trim: true, lowercase: true },
     status: { type: String, enum: ["PENDING", "APPROVED", "REJECTED"], default: "PENDING" },
     reason: { type: String, default: "", maxlength: 140 },
     requestedAt: { type: Date, default: Date.now },

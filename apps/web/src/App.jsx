@@ -1,12 +1,58 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { jwtDecode } from "jwt-decode";
 
 import { api, withAuth } from "./lib/api";
 import { connectSocket } from "./lib/socket";
-import { clearAuth, clearHouseAuth, loadAuth, loadHouseAuth, saveAuth, saveHouseAuth } from "./lib/storage";
+import {
+  clearAuth,
+  clearHouseAuth,
+  clearUserAuth,
+  loadAuth,
+  loadHouseAuth,
+  loadUserAuth,
+  saveAuth,
+  saveHouseAuth,
+  saveUserAuth,
+} from "./lib/storage";
 
 const MEMBER_HINTS_KEY = "gilded-house-member-hints-v1";
+const GOOGLE_SCRIPT_ID = "google-identity-services-script";
+
+function loadGoogleIdentityScript() {
+  if (typeof window === "undefined") return Promise.reject(new Error("window is not available"));
+  if (window.google?.accounts?.id) return Promise.resolve(window.google);
+
+  const existing = document.getElementById(GOOGLE_SCRIPT_ID);
+  if (existing) {
+    return new Promise((resolve, reject) => {
+      const startedAt = Date.now();
+      const tick = () => {
+        if (window.google?.accounts?.id) {
+          resolve(window.google);
+          return;
+        }
+        if (Date.now() - startedAt > 5000) {
+          reject(new Error("Google script did not initialize"));
+          return;
+        }
+        window.setTimeout(tick, 60);
+      };
+      tick();
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.id = GOOGLE_SCRIPT_ID;
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => resolve(window.google);
+    script.onerror = () => reject(new Error("Failed to load Google script"));
+    document.head.appendChild(script);
+  });
+}
 
 function toMoney(n) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(
@@ -33,6 +79,24 @@ function parseAuth(token) {
     houseCode: decoded.houseCode || decoded.roomCode || null,
     actorId: decoded.actorId,
   };
+}
+
+function parseUserAuth(token) {
+  const decoded = jwtDecode(token);
+  return {
+    token,
+    scope: decoded.scope || "USER",
+    userId: decoded.actorId || "",
+    email: decoded.email || "",
+    name: decoded.name || "",
+    exp: Number(decoded.exp || 0),
+  };
+}
+
+function userTokenExpired(userAuth) {
+  const exp = Number(userAuth?.exp || 0);
+  if (!exp) return false;
+  return Date.now() >= exp * 1000;
 }
 
 function readBootParams() {
@@ -78,6 +142,8 @@ function rememberMemberHint(roomCode, userId, playerName) {
 
 export default function App() {
   const boot = useMemo(() => readBootParams(), []);
+  const [userAuth, setUserAuth] = useState(() => loadUserAuth());
+  const [accountMode, setAccountMode] = useState("WELCOME");
   const [houseAuth, setHouseAuth] = useState(() => {
     if (boot.asPlayer) {
       clearHouseAuth();
@@ -101,6 +167,13 @@ export default function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
   const [entryMode, setEntryMode] = useState("CHOICE");
+  const googleClientId = String(import.meta.env.VITE_GOOGLE_CLIENT_ID || "").trim();
+  const [googleReady, setGoogleReady] = useState(false);
+  const [signupPassword, setSignupPassword] = useState("");
+  const [existingAccountForm, setExistingAccountForm] = useState({
+    email: "",
+    password: "",
+  });
 
   const [houseCreateForm, setHouseCreateForm] = useState({
     roomName: "",
@@ -154,6 +227,52 @@ export default function App() {
     const id = setTimeout(() => setToast(""), 2200);
     return () => clearTimeout(id);
   }, [toast]);
+
+  useEffect(() => {
+    if (userAuth) {
+      saveUserAuth(userAuth);
+      return;
+    }
+    clearUserAuth();
+  }, [userAuth]);
+
+  useEffect(() => {
+    if (!userAuth) return;
+    if (!userTokenExpired(userAuth)) return;
+    clearUserAuth();
+    setUserAuth(null);
+    setToast("Account session expired. Please login again.");
+  }, [userAuth]);
+
+  useEffect(() => {
+    if (userAuth) return;
+    clearAuth();
+    clearHouseAuth();
+    setAuth(null);
+    setRoom(null);
+    setHouseAuth(null);
+    setHouse(null);
+    setIsConnected(false);
+    setHouseConnected(false);
+  }, [userAuth]);
+
+  useEffect(() => {
+    if (!googleClientId) {
+      setGoogleReady(false);
+      return undefined;
+    }
+    let active = true;
+    loadGoogleIdentityScript()
+      .then(() => {
+        if (active) setGoogleReady(true);
+      })
+      .catch(() => {
+        if (active) setGoogleReady(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [googleClientId]);
 
   useEffect(() => {
     if (auth) saveAuth(auth);
@@ -221,6 +340,81 @@ export default function App() {
     }
     return house.myBalance || null;
   }, [house, houseAuth?.actorId]);
+
+  useEffect(() => {
+    if (!userAuth) return;
+    const fallback = String(userAuth.email || "").split("@")[0];
+    const displayName = String(userAuth.name || fallback || "").trim();
+    if (!displayName) return;
+    setHouseCreateForm((s) => ({ ...s, bankerName: s.bankerName || displayName }));
+    setHouseJoinRequestForm((s) => ({ ...s, playerName: s.playerName || displayName }));
+    setHouseExistingPlayerForm((s) => ({ ...s, playerName: s.playerName || displayName }));
+  }, [userAuth?.userId, userAuth?.name, userAuth?.email]);
+
+  async function signupWithGoogle(credential) {
+    const password = String(signupPassword || "");
+    if (password.length < 6) {
+      setToast("Set a password with at least 6 characters before Google signup.");
+      return;
+    }
+    try {
+      setBusy(true);
+      const res = await api.post("/users/signup/google", {
+        credential,
+        password,
+      });
+      const nextUser = parseUserAuth(res.data.token);
+      setUserAuth(nextUser);
+      setExistingAccountForm((s) => ({
+        ...s,
+        email: res.data.user?.email || s.email,
+        password: "",
+      }));
+      setAccountMode("WELCOME");
+      setSignupPassword("");
+      setToast(`Welcome ${res.data.user?.name || "Player"}`);
+    } catch (err) {
+      setToast(err?.response?.data?.message || "Unable to create account with Google");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function loginExistingAccount(e) {
+    e.preventDefault();
+    try {
+      setBusy(true);
+      const res = await api.post("/users/login", {
+        email: String(existingAccountForm.email || "").trim(),
+        password: existingAccountForm.password,
+      });
+      const nextUser = parseUserAuth(res.data.token);
+      setUserAuth(nextUser);
+      setExistingAccountForm((s) => ({ ...s, password: "" }));
+      setAccountMode("WELCOME");
+      setToast(`Welcome back ${res.data.user?.name || "Player"}`);
+    } catch (err) {
+      setToast(err?.response?.data?.message || "Unable to login");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function logoutAccount() {
+    clearUserAuth();
+    setUserAuth(null);
+    clearAuth();
+    clearHouseAuth();
+    setAuth(null);
+    setRoom(null);
+    setHouseAuth(null);
+    setHouse(null);
+    setIsConnected(false);
+    setHouseConnected(false);
+    setEntryMode("CHOICE");
+    setAccountMode("WELCOME");
+    setToast("Account logged out");
+  }
 
   async function createHouse(e) {
     e.preventDefault();
@@ -743,6 +937,97 @@ export default function App() {
     if (!room?.requests) return [];
     return room.requests.filter((r) => r.status === "PENDING");
   }, [room?.requests]);
+  const googleEnabled = !!googleClientId;
+  const googleButtonReady = googleEnabled && googleReady;
+
+  if (!userAuth) {
+    return (
+      <div className="app-shell min-h-screen text-gold-100">
+        <div className="mx-auto max-w-4xl px-4 py-10">
+          <header className="mb-8">
+            <BrandLockup
+              centered
+              title="Welcome to Poker House"
+              subtitle="Sign in first. Then you can create a room, join a room, or open an existing room."
+            />
+          </header>
+
+          {accountMode === "WELCOME" ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              <button className="card interactive-tile text-left transition hover:border-gold-300/50" onClick={() => setAccountMode("NEW")}>
+                <h2 className="font-cinzel text-2xl">New User</h2>
+                <p className="mt-2 text-sm text-gold-100/70">Sign up with Google and set a password once.</p>
+              </button>
+              <button className="card interactive-tile text-left transition hover:border-gold-300/50" onClick={() => setAccountMode("EXISTING")}>
+                <h2 className="font-cinzel text-2xl">Existing User</h2>
+                <p className="mt-2 text-sm text-gold-100/70">Login using your email and password.</p>
+              </button>
+            </div>
+          ) : null}
+
+          {accountMode === "NEW" ? (
+            <div className="card mx-auto max-w-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="font-cinzel text-xl">New User Sign Up</h2>
+                <button className="btn-ghost text-sm" type="button" onClick={() => setAccountMode("WELCOME")}>
+                  Back
+                </button>
+              </div>
+              <input
+                className="input"
+                type="password"
+                placeholder="Set password (min 6 chars)"
+                value={signupPassword}
+                onChange={(e) => setSignupPassword(e.target.value)}
+              />
+              {googleButtonReady ? (
+                <GoogleSignInButton
+                  clientId={googleClientId}
+                  disabled={busy}
+                  helperText="Google verifies your identity. Password is used for existing-user login."
+                  onCredential={signupWithGoogle}
+                  onFailure={(message) => setToast(message || "Google Sign-In failed")}
+                />
+              ) : googleEnabled ? (
+                <div className="text-xs text-gold-100/60">Loading Google Sign-In...</div>
+              ) : (
+                <div className="text-xs text-gold-100/60">Google Sign-In disabled. Set `VITE_GOOGLE_CLIENT_ID`.</div>
+              )}
+            </div>
+          ) : null}
+
+          {accountMode === "EXISTING" ? (
+            <form onSubmit={loginExistingAccount} className="card mx-auto max-w-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="font-cinzel text-xl">Existing User Login</h2>
+                <button className="btn-ghost text-sm" type="button" onClick={() => setAccountMode("WELCOME")}>
+                  Back
+                </button>
+              </div>
+              <input
+                className="input"
+                type="email"
+                placeholder="Email"
+                value={existingAccountForm.email}
+                onChange={(e) => setExistingAccountForm((s) => ({ ...s, email: e.target.value }))}
+              />
+              <input
+                className="input"
+                type="password"
+                placeholder="Password"
+                value={existingAccountForm.password}
+                onChange={(e) => setExistingAccountForm((s) => ({ ...s, password: e.target.value }))}
+              />
+              <button disabled={busy} className="btn-gold w-full" type="submit">
+                {busy ? "Logging in..." : "Login"}
+              </button>
+            </form>
+          ) : null}
+        </div>
+        <Toast message={toast} />
+      </div>
+    );
+  }
 
   if (!auth && houseAuth && house) {
     return (
@@ -755,6 +1040,7 @@ export default function App() {
                 subtitle={`${house.roomName} • Code ${house.roomCode} • + means net won, - means net lost`}
               />
               <div className="flex flex-wrap gap-2">
+                <span className="rounded-full border border-gold-500/30 bg-black/30 px-3 py-1 text-xs text-gold-100/80">{userAuth.email}</span>
                 <span
                   className={`live-pill rounded-full border px-3 py-1 text-xs ${
                     houseConnected ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-100" : "border-red-500/40 bg-red-500/20 text-red-100"
@@ -767,6 +1053,9 @@ export default function App() {
                 </button>
                 <button className="btn-ghost text-sm" onClick={logoutHouse}>
                   Logout Room
+                </button>
+                <button className="btn-ghost text-sm" onClick={logoutAccount}>
+                  Logout Account
                 </button>
               </div>
             </div>
@@ -978,12 +1267,17 @@ export default function App() {
     return (
       <div className="app-shell min-h-screen text-gold-100">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <header className="mb-6">
+          <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <BrandLockup
-              centered
               title="Welcome to Poker House"
               subtitle="Choose one option to continue. New players send a join request and banker approval is required."
             />
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-gold-500/30 bg-black/30 px-3 py-1 text-xs text-gold-100/80">{userAuth.email}</span>
+              <button className="btn-ghost text-sm" onClick={logoutAccount}>
+                Logout Account
+              </button>
+            </div>
           </header>
 
           {entryMode === "CHOICE" ? (
@@ -1181,6 +1475,7 @@ export default function App() {
               } chips`}
             />
             <div className="flex flex-wrap gap-2">
+              <span className="rounded-full border border-gold-500/30 bg-black/30 px-3 py-1 text-xs text-gold-100/80">{userAuth.email}</span>
               <span className={`rounded-full border px-3 py-1 text-xs ${statusBadge(room.status)}`}>{room.status}</span>
               <span
                 className={`live-pill rounded-full border px-3 py-1 text-xs ${
@@ -1210,6 +1505,9 @@ export default function App() {
               ) : null}
               <button onClick={logoutSession} className="btn-ghost text-sm">
                 Leave Session
+              </button>
+              <button onClick={logoutAccount} className="btn-ghost text-sm">
+                Logout Account
               </button>
             </div>
           </div>
@@ -1748,6 +2046,53 @@ function PlayerView({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function GoogleSignInButton({ clientId, onCredential, onFailure, helperText = "", disabled = false }) {
+  const buttonRef = useRef(null);
+  const onCredentialRef = useRef(onCredential);
+  const onFailureRef = useRef(onFailure);
+
+  useEffect(() => {
+    onCredentialRef.current = onCredential;
+  }, [onCredential]);
+
+  useEffect(() => {
+    onFailureRef.current = onFailure;
+  }, [onFailure]);
+
+  useEffect(() => {
+    if (!clientId || !buttonRef.current) return;
+    const googleId = window.google?.accounts?.id;
+    if (!googleId) return;
+
+    googleId.initialize({
+      client_id: clientId,
+      callback: (response) => {
+        if (response?.credential) {
+          onCredentialRef.current?.(response.credential);
+          return;
+        }
+        onFailureRef.current?.("Google Sign-In failed");
+      },
+    });
+
+    buttonRef.current.innerHTML = "";
+    googleId.renderButton(buttonRef.current, {
+      theme: "outline",
+      size: "large",
+      text: "continue_with",
+      shape: "pill",
+      width: 320,
+    });
+  }, [clientId]);
+
+  return (
+    <div className={disabled ? "pointer-events-none opacity-60" : ""}>
+      <div ref={buttonRef} className="flex justify-center" />
+      {helperText ? <div className="mt-1 text-center text-xs text-gold-100/60">{helperText}</div> : null}
     </div>
   );
 }

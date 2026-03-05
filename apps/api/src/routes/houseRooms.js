@@ -9,7 +9,8 @@ import { authRequired, requireRole, signAccessToken } from "../middleware/auth.j
 import { validateBody } from "../middleware/validate.js";
 import { generateRoomCode, randomId } from "../utils/code.js";
 import { presentHouseForRole } from "../services/housePresenter.js";
-import { addHouseSessionSummary, ensureHouseBalance, ensureHouseMember } from "../services/houseRoom.js";
+import { addHouseSessionSummary, attachGoogleIdentity, ensureHouseBalance, ensureHouseMember } from "../services/houseRoom.js";
+import { verifyGoogleIdToken } from "../services/googleAuth.js";
 import { presentRoomForRole } from "../services/roomPresenter.js";
 
 export const houseRoomRouter = Router();
@@ -49,6 +50,17 @@ const memberLoginSchema = z
     }
   });
 
+const memberGoogleLoginSchema = z.object({
+  roomCode: z.string().regex(/^\d{6}$/),
+  credential: z.string().trim().min(10),
+  playerName: z.string().trim().min(2).max(40).optional(),
+});
+
+const joinHouseGoogleSchema = z.object({
+  credential: z.string().trim().min(10),
+  playerName: z.string().trim().min(2).max(40).optional(),
+});
+
 const createSessionSchema = z.object({
   sessionName: z.string().trim().min(2).max(80).optional(),
   date: z.string().datetime().optional(),
@@ -80,6 +92,10 @@ function normalizeRoomCode(code) {
 
 function normalizeName(name) {
   return String(name || "").trim().toLowerCase();
+}
+
+function normalizeEmail(email) {
+  return String(email || "").trim().toLowerCase();
 }
 
 function uniqueMemberName(house, name) {
@@ -149,6 +165,20 @@ function houseJoinRequestPayload(reqItem) {
     resolvedBy: reqItem.resolvedBy || "",
     approvedUserId: reqItem.approvedUserId || "",
   };
+}
+
+function findMemberByGoogle(house, googleSub, googleEmail) {
+  const sub = String(googleSub || "").trim();
+  const email = normalizeEmail(googleEmail);
+  if (!sub && !email) return null;
+  return (
+    house.members.find((m) => {
+      if (m.role === "OWNER") return false;
+      if (sub && String(m.googleSub || "").trim() === sub) return true;
+      if (email && normalizeEmail(m.googleEmail) === email) return true;
+      return false;
+    }) || null
+  );
 }
 
 houseRoomRouter.post("/house/rooms", validateBody(createHouseSchema), async (req, res, next) => {
@@ -272,20 +302,69 @@ houseRoomRouter.post("/house/rooms/member/login", validateBody(memberLoginSchema
   }
 });
 
+houseRoomRouter.post("/house/rooms/member/google-login", validateBody(memberGoogleLoginSchema), async (req, res, next) => {
+  try {
+    const roomCode = normalizeRoomCode(req.validatedBody.roomCode);
+    const house = await HouseRoom.findOne({ roomCode });
+    if (!house) return next(createError(404, "Room not found"));
+
+    const google = await verifyGoogleIdToken(req.validatedBody.credential);
+    const inputPlayerName = String(req.validatedBody.playerName || "").trim();
+
+    let member = findMemberByGoogle(house, google.sub, google.email);
+    if (!member && inputPlayerName) {
+      const target = normalizeName(inputPlayerName);
+      member = house.members.find((m) => m.role !== "OWNER" && normalizeName(m.name) === target) || null;
+    }
+    if (!member || member.role === "OWNER") {
+      return next(createError(404, "Member not found. Ask banker to approve your join request."));
+    }
+
+    attachGoogleIdentity(member, google.sub, google.email);
+    await house.save();
+
+    const token = signAccessToken({
+      scope: "HOUSE",
+      role: "PLAYER",
+      houseCode: house.roomCode,
+      actorId: member.userId,
+    });
+
+    res.json({
+      token,
+      role: "PLAYER",
+      actorId: member.userId,
+      house: presentHouseForRole(house, "PLAYER", member.userId),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 async function createJoinRequestHandler(req, res, next) {
   try {
     const roomCode = normalizeRoomCode(req.params.roomCode);
     const house = await HouseRoom.findOne({ roomCode });
     if (!house) return next(createError(404, "Room not found"));
 
-    const requestedName = String(req.validatedBody.playerName || "").trim();
+    const googleSub = String(req.googleIdentity?.sub || "").trim();
+    const googleEmail = normalizeEmail(req.googleIdentity?.email || "");
+    const requestedName = String(req.validatedBody.playerName || req.googleIdentity?.name || "").trim();
+    if (!requestedName) return next(createError(400, "playerName is required"));
     const targetName = normalizeName(requestedName);
-    const existingMember = house.members.find((m) => m.role !== "OWNER" && normalizeName(m.name) === targetName);
+    const existingMember =
+      findMemberByGoogle(house, googleSub, googleEmail) ||
+      house.members.find((m) => m.role !== "OWNER" && normalizeName(m.name) === targetName);
     if (existingMember) {
       return next(createError(409, "You are already in this room. Use Existing Room to login."));
     }
 
-    const pending = house.joinRequests.find((j) => j.status === "PENDING" && normalizeName(j.playerName) === targetName);
+    const pending = house.joinRequests.find((j) => {
+      if (j.status !== "PENDING") return false;
+      if (googleSub && String(j.googleSub || "").trim() === googleSub) return true;
+      if (googleEmail && normalizeEmail(j.googleEmail) === googleEmail) return true;
+      return normalizeName(j.playerName) === targetName;
+    });
     if (pending) {
       return res.status(202).json({
         roomCode: house.roomCode,
@@ -297,6 +376,8 @@ async function createJoinRequestHandler(req, res, next) {
     const joinReq = {
       requestId: randomId("join"),
       playerName: requestedName,
+      googleSub,
+      googleEmail,
       status: "PENDING",
       reason: "",
       requestedAt: new Date(),
@@ -322,6 +403,14 @@ async function createJoinRequestHandler(req, res, next) {
 
 houseRoomRouter.post("/house/rooms/:roomCode/join", validateBody(joinHouseSchema), createJoinRequestHandler);
 houseRoomRouter.post("/house/rooms/:roomCode/join-requests", validateBody(joinHouseSchema), createJoinRequestHandler);
+houseRoomRouter.post("/house/rooms/:roomCode/join-requests/google", validateBody(joinHouseGoogleSchema), async (req, res, next) => {
+  try {
+    req.googleIdentity = await verifyGoogleIdToken(req.validatedBody.credential);
+    return createJoinRequestHandler(req, res, next);
+  } catch (err) {
+    return next(err);
+  }
+});
 
 houseRoomRouter.get("/house/rooms/:roomCode/join-requests/:requestId", async (req, res, next) => {
   try {
@@ -367,15 +456,20 @@ houseRoomRouter.post(
       if (joinReq.status !== "PENDING") return next(createError(409, "Join request already resolved"));
 
       const normalizedRequestedName = normalizeName(joinReq.playerName);
-      const existingMember = house.members.find((m) => m.role !== "OWNER" && normalizeName(m.name) === normalizedRequestedName);
+      const existingMember =
+        findMemberByGoogle(house, joinReq.googleSub, joinReq.googleEmail) ||
+        house.members.find((m) => m.role !== "OWNER" && normalizeName(m.name) === normalizedRequestedName);
 
       let userId = existingMember?.userId || "";
       let finalName = existingMember?.name || "";
       if (!existingMember) {
         finalName = uniqueMemberName(house, joinReq.playerName);
         userId = randomId("member");
-        ensureHouseMember(house, { userId, name: finalName, role: "PLAYER" });
+        const member = ensureHouseMember(house, { userId, name: finalName, role: "PLAYER" });
+        attachGoogleIdentity(member, joinReq.googleSub, joinReq.googleEmail);
         ensureHouseBalance(house, { userId, name: finalName });
+      } else {
+        attachGoogleIdentity(existingMember, joinReq.googleSub, joinReq.googleEmail);
       }
 
       joinReq.status = "APPROVED";

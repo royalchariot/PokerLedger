@@ -10,6 +10,7 @@ import { connectDb } from "./db.js";
 import { healthRouter } from "./routes/health.js";
 import { roomRouter } from "./routes/rooms.js";
 import { houseRoomRouter } from "./routes/houseRooms.js";
+import { userRouter } from "./routes/users.js";
 import { errorHandler, notFound } from "./middleware/error.js";
 import { createSocketServer } from "./sockets/index.js";
 
@@ -44,6 +45,7 @@ const apiLimiter = rateLimit({
 
 app.use("/api", apiLimiter);
 app.use("/api", healthRouter);
+app.use("/api", userRouter);
 app.use("/api", roomRouter);
 app.use("/api", houseRoomRouter);
 

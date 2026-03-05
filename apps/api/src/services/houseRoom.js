@@ -30,6 +30,15 @@ export function ensureHouseMember(house, { userId, name, role = "PLAYER" }) {
   return house.members[house.members.length - 1];
 }
 
+export function attachGoogleIdentity(member, googleSub, googleEmail) {
+  if (!member) return member;
+  const sub = String(googleSub || "").trim();
+  const email = String(googleEmail || "").trim().toLowerCase();
+  if (sub) member.googleSub = sub;
+  if (email) member.googleEmail = email;
+  return member;
+}
+
 export function ensureHouseBalance(house, { userId, name }) {
   const found = house.balances.find((b) => b.userId === userId);
   if (found) {
@@ -154,4 +163,3 @@ export function roomLeaderboard(house) {
       lastPlayedAt: b.lastPlayedAt || null,
     }));
 }
-
